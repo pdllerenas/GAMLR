@@ -23,4 +23,17 @@ struct SyncProbe {
     return buffer;
   }
 
+  static SyncProbe Deserialize(const std::vector<uint8_t>& data) {
+    SyncProbe probe{};
+    size_t offset = 0;
+
+    std::memcpy(&probe.sequence_number, data.data() + offset, sizeof(probe.sequence_number));
+    offset += sizeof(probe.sequence_number);
+
+    std::memcpy(&probe.t_send, data.data() + offset, sizeof(probe.t_send));
+    offset += sizeof(probe.t_send);
+
+    std::memcpy(&probe.t_receive, data.data() + offset, sizeof(probe.t_receive));
+    return probe;
+  }
 };
