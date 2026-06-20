@@ -1,6 +1,11 @@
+# ---------------------------------------------------------
+# Echo Server
+# ---------------------------------------------------------
+add_executable(delay_server server_main.cpp)
 
-add_executable(NetworkDelayEstimator main.cpp)
+# ---------------------------------------------------------
+# Client
+# ---------------------------------------------------------
+add_executable(delay_client client_main.cpp)
 
-target_link_libraries(NetworkDelayEstimator PRIVATE Boost::headers Threads::Threads)
-
-target_include_directories(NetworkDelayEstimator PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(delay_client PRIVATE Boost::headers Threads::Threads)
