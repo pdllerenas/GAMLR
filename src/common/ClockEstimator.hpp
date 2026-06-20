@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <array>
 #include <boost/math/distributions/gamma.hpp>
+#include <boost/math/statistics/linear_regression.hpp>
 #include <boost/math/statistics/univariate_statistics.hpp>
 #include <chrono>
 #include <cmath>
@@ -21,20 +22,20 @@ class ClockEstimator {
 
   double ComputeQuantile(GammaParameters params,
                          std::span<const double> z_grid) {
-    size_t nx = rho_bin.size() / sizeof(double);
-    size_t ny = beta_bin.size() / sizeof(double);
+    size_t nx = rho_bin.size();
+    size_t ny = beta_bin.size();
 
-    auto it_x = std::lower_bound(rho_bin, rho_bin + nx, params.rho);
-    auto it_y = std::lower_bound(beta_bin, beta_bin + ny, params.beta);
+    auto it_x = std::lower_bound(rho_bin.begin(), rho_bin.end(), params.rho);
+    auto it_y = std::lower_bound(beta_bin.begin(), beta_bin.end(), params.beta);
 
-    if (it_x == rho_bin + nx || it_x == rho_bin || it_y == beta_bin + ny ||
-        it_y == beta_bin) {
+    if (it_x == rho_bin.end() || it_x == rho_bin.begin() ||
+        it_y == beta_bin.end() || it_y == beta_bin.begin()) {
       throw std::out_of_range(
           "Requested point is outside the interpolation grid.");
     }
 
-    size_t ix = std::distance(rho_bin, it_x) - 1;
-    size_t iy = std::distance(beta_bin, it_y) - 1;
+    size_t ix = std::distance(rho_bin.begin(), it_x) - 1;
+    size_t iy = std::distance(beta_bin.begin(), it_y) - 1;
 
     double tx = (params.rho - rho_bin[ix]) / (rho_bin[ix + 1] - rho_bin[ix]);
     double ty =
@@ -46,38 +47,46 @@ class ClockEstimator {
     double z11 = z_grid[(iy + 1) * nx + (ix + 1)];
 
     double bottom_interp = std::lerp(z00, z10, tx);
-    double top_interp = std::lerp(z10, z11, tx);
+    double top_interp = std::lerp(z01, z11, tx);
 
     return std::lerp(bottom_interp, top_interp, ty);
   }
 
   std::array<double, NUM_PACKETS> ComputeQuantiles(GammaParameters params,
                                                    bool special_case) {
-    std::array<std::span<uint8_t>, 5> quantiles;
+    std::array<std::span<const double>, NUM_PACKETS> quantiles;
+    std::array<double, NUM_PACKETS> theoretical_quantiles;
     if (special_case) {
       quantiles = {quantil40_bin, quantil45_bin, quantil50_bin, quantil55_bin,
                    quantil60_bin};
     } else {
-      quantiles = {quantil16_bin, quantil33_bin, quantil50_bin, quantil66_bin,
+      quantiles = {quantil16_bin, quantil33_bin, quantil50_bin, quantil67_bin,
                    quantil83_bin};
     }
-    for (auto& quantile : quantiles) {
-      ComputeQuantile(params, quantile);
+    for (size_t i = 0; i < quantiles.size(); ++i) {
+      theoretical_quantiles[i] = ComputeQuantile(params, quantiles[i]);
     }
-    return {};
+    return theoretical_quantiles;
   }
 
   GammaParameters CalculateGammaParameters(Stats stats) {
     double rho = 4.0 / std::pow(stats.skewness, 2.0);
     double beta = (stats.stddev * stats.skewness) / 2.0;
-    double shift = mean - ((2 * stats.stddev) / stats.skewness);
+    double shift = stats.mean - ((2 * stats.stddev) / stats.skewness);
     return {rho, beta, shift, stats.mean};
   }
 
-  double FitShiftedGamma(Stats stats, GammaParameters params) {
-    boost::math::gamma_distribution();
-
-    return 0.0;
+  double FitShiftedGamma(const std::vector<uint64_t>& forward_transit_times,
+                         GammaParameters params, bool special_case) {
+    std::array<double, NUM_PACKETS> theoretical_quantiles =
+        ComputeQuantiles(params, special_case);
+    std::array<double, NUM_PACKETS> ftt_doubles;
+    for (size_t i = 0; i < NUM_PACKETS; ++i) {
+      ftt_doubles[i] = static_cast<double>(forward_transit_times[i]);
+    }
+    auto [a, b] = boost::math::statistics::simple_ordinary_least_squares(
+        ftt_doubles, theoretical_quantiles);
+    return a / b;
   }
 
   uint64_t GetCurrentTime() {
@@ -92,27 +101,21 @@ class ClockEstimator {
     double stddev = std::sqrt(variance);
     double skewness = boost::math::statistics::skewness(forward_transit_times);
 
-    std::vector<uint64_t> packet_separation;
-    for (int i = 1; i < NUM_PACKETS; ++i) {
-      packet_separation.push_back(forward_transit_times[i].t_receive -
-                                  forward_transit_times[i - 1].t_receive);
-    }
-
-    double avg_packet_separation =
-        boost::math::statistics::mean(packet_separation);
-
-    return {mean, variance, stddev, skewness, avg_packet_separation};
+    return {mean, variance, stddev, skewness, 0};
   }
 
  public:
   explicit ClockEstimator(UDPClient& network_client) : client(network_client) {}
   double CalculateOffset() {
     std::vector<uint64_t> forward_transit_times;
+    std::vector<uint64_t> packet_separation;
 
     for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
       SyncProbe probe{i, GetCurrentTime(), 0};
       client.Send(probe.Serialize());
     }
+
+    SyncProbe previous_probe{};
 
     for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
       std::vector<uint8_t> reply = client.Receive(1024);
@@ -120,26 +123,38 @@ class ClockEstimator {
 
       forward_transit_times.push_back(replied_probe.t_receive -
                                       replied_probe.t_send);
+      if (i > 0) {
+        packet_separation.push_back(replied_probe.t_receive -
+                                    previous_probe.t_receive);
+      }
+      previous_probe = replied_probe;
     }
 
+    double avg_packet_separation =
+        boost::math::statistics::mean(packet_separation);
+
     Stats stats = CalculateStats(forward_transit_times);
+    stats.packet_separation_avg = avg_packet_separation;
+
     GammaParameters params = CalculateGammaParameters(stats);
     double gamma_coefficient;
 
     double ips_tolerance_ms =
         std::chrono::duration<double, std::milli>(IPS_TOLERANCE).count();
-    bool is_low_variance(stats.stddev < M_SEC_LOWERBOUND);
+    double lower_bound_ms =
+        std::chrono::duration<double, std::milli>(M_SEC_LOWERBOUND).count();
+    bool is_low_variance(stats.stddev < lower_bound_ms);
     bool is_ideal_average = (stats.packet_separation_avg > 0.0) &&
                             (stats.packet_separation_avg < ips_tolerance_ms);
 
     if (is_low_variance && is_ideal_average) {
-      gamma_coefficient = std::min(forward_transit_times);
+      gamma_coefficient = *std::min_element(forward_transit_times.begin(),
+                                            forward_transit_times.end());
     } else {
-      ComputeQuantiles()
+      gamma_coefficient =
+          FitShiftedGamma(forward_transit_times, params, is_low_variance);
     }
 
-    // pending logic
-    double final_offset = 0.0;
-    return final_offset;
+    return gamma_coefficient;
   }
 };
