@@ -23,7 +23,7 @@ class ClockEstimator {
   double ComputeQuantile(GammaParameters params,
                          std::span<const double> z_grid) {
     size_t nx = rho_bin.size();
-    size_t ny = beta_bin.size();
+    // size_t ny = beta_bin.size();
 
     auto it_x = std::lower_bound(rho_bin.begin(), rho_bin.end(), params.rho);
     auto it_y = std::lower_bound(beta_bin.begin(), beta_bin.end(), params.beta);
@@ -76,13 +76,13 @@ class ClockEstimator {
     return {rho, beta, shift, stats.mean};
   }
 
-  double FitShiftedGamma(const std::vector<uint64_t>& forward_transit_times,
+  double FitShiftedGamma(const std::vector<double>& forward_transit_times,
                          GammaParameters params, bool special_case) {
     std::array<double, NUM_PACKETS> theoretical_quantiles =
         ComputeQuantiles(params, special_case);
     std::array<double, NUM_PACKETS> ftt_doubles;
     for (size_t i = 0; i < NUM_PACKETS; ++i) {
-      ftt_doubles[i] = static_cast<double>(forward_transit_times[i]);
+      ftt_doubles[i] = forward_transit_times[i];
     }
     auto [a, b] = boost::math::statistics::simple_ordinary_least_squares(
         ftt_doubles, theoretical_quantiles);
@@ -90,12 +90,12 @@ class ClockEstimator {
   }
 
   uint64_t GetCurrentTime() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
+    return std::chrono::duration_cast<std::chrono::microseconds>(
                std::chrono::system_clock::now().time_since_epoch())
         .count();
   }
 
-  Stats CalculateStats(const std::vector<uint64_t>& forward_transit_times) {
+  Stats CalculateStats(const std::vector<double>& forward_transit_times) {
     auto [mean, variance] = boost::math::statistics::mean_and_sample_variance(
         forward_transit_times);
     double stddev = std::sqrt(variance);
@@ -107,8 +107,8 @@ class ClockEstimator {
  public:
   explicit ClockEstimator(UDPClient& network_client) : client(network_client) {}
   double CalculateOffset() {
-    std::vector<uint64_t> forward_transit_times;
-    std::vector<uint64_t> packet_separation;
+    std::vector<double> forward_transit_times;
+    std::vector<double> packet_separation;
 
     for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
       SyncProbe probe{i, GetCurrentTime(), 0};
@@ -121,11 +121,15 @@ class ClockEstimator {
       std::vector<uint8_t> reply = client.Receive(1024);
       SyncProbe replied_probe = SyncProbe::Deserialize(reply);
 
-      forward_transit_times.push_back(replied_probe.t_receive -
-                                      replied_probe.t_send);
+      int64_t t_rx = static_cast<int64_t>(replied_probe.t_receive);
+      int64_t t_tx = static_cast<int64_t>(replied_probe.t_send);
+
+      forward_transit_times.push_back(static_cast<double>(t_rx - t_tx) /
+                                      1000.0);
       if (i > 0) {
-        packet_separation.push_back(replied_probe.t_receive -
-                                    previous_probe.t_receive);
+        int64_t prev_rx = static_cast<int64_t>(previous_probe.t_receive);
+        packet_separation.push_back(static_cast<double>(t_rx - prev_rx) /
+                                    1000.0);
       }
       previous_probe = replied_probe;
     }
@@ -136,21 +140,21 @@ class ClockEstimator {
     Stats stats = CalculateStats(forward_transit_times);
     stats.packet_separation_avg = avg_packet_separation;
 
-    GammaParameters params = CalculateGammaParameters(stats);
     double gamma_coefficient;
 
-    double ips_tolerance_ms =
+    double ips_tolerance_us =
         std::chrono::duration<double, std::milli>(IPS_TOLERANCE).count();
-    double lower_bound_ms =
+    double lower_bound_us =
         std::chrono::duration<double, std::milli>(M_SEC_LOWERBOUND).count();
-    bool is_low_variance(stats.stddev < lower_bound_ms);
-    bool is_ideal_average = (stats.packet_separation_avg > 0.0) &&
-                            (stats.packet_separation_avg < ips_tolerance_ms);
+    bool is_low_variance(stats.stddev < lower_bound_us);
+    bool is_ideal_average = (stats.packet_separation_avg >= 0.0) &&
+                            (stats.packet_separation_avg < ips_tolerance_us);
 
     if (is_low_variance && is_ideal_average) {
       gamma_coefficient = *std::min_element(forward_transit_times.begin(),
                                             forward_transit_times.end());
     } else {
+      GammaParameters params = CalculateGammaParameters(stats);
       gamma_coefficient =
           FitShiftedGamma(forward_transit_times, params, is_low_variance);
     }
