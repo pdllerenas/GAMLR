@@ -155,6 +155,7 @@ class ClockEstimator {
                                             forward_transit_times.end());
     } else {
       GammaParameters params = CalculateGammaParameters(stats);
+      std::sort(forward_transit_times.begin(), forward_transit_times.end());
       gamma_coefficient =
           FitShiftedGamma(forward_transit_times, params, is_low_variance);
     }
