@@ -8,6 +8,7 @@
 #include <numeric>
 #include <span>
 #include <stdexcept>
+#include <thread>
 
 #include "../../data/quantiles_data.hpp"
 #include "Socket.hpp"
@@ -25,8 +26,15 @@ class ClockEstimator {
     size_t nx = rho_bin.size();
     // size_t ny = beta_bin.size();
 
-    auto it_x = std::lower_bound(rho_bin.begin(), rho_bin.end(), params.rho);
-    auto it_y = std::lower_bound(beta_bin.begin(), beta_bin.end(), params.beta);
+    double clamped_rho = std::clamp(params.rho, 1.0, 4.0);
+    double clamped_beta =
+        std::clamp(params.rho, beta_bin.front(), beta_bin.back());
+
+    auto it_x = std::lower_bound(rho_bin.begin(), rho_bin.end(), clamped_rho);
+    auto it_y =
+        std::lower_bound(beta_bin.begin(), beta_bin.end(), clamped_beta);
+    std::cout << "beta: " << clamped_beta << '\n';
+    std::cout << "rho: " << clamped_rho << '\n';
 
     if (it_x == rho_bin.end() || it_x == rho_bin.begin() ||
         it_y == beta_bin.end() || it_y == beta_bin.begin()) {
@@ -37,7 +45,7 @@ class ClockEstimator {
     size_t ix = std::distance(rho_bin.begin(), it_x) - 1;
     size_t iy = std::distance(beta_bin.begin(), it_y) - 1;
 
-    double tx = (params.rho - rho_bin[ix]) / (rho_bin[ix + 1] - rho_bin[ix]);
+    double tx = (clamped_rho - rho_bin[ix]) / (rho_bin[ix + 1] - rho_bin[ix]);
     double ty =
         (params.beta - beta_bin[iy]) / (beta_bin[iy + 1] - beta_bin[iy]);
 
