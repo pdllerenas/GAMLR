@@ -8,9 +8,10 @@ struct SyncProbe {
   uint64_t t_send;
   uint64_t t_receive;
 
+  static constexpr size_t PACKET_SIZE = 48;
+
   std::vector<uint8_t> Serialize() const {
-    std::vector<uint8_t> buffer(sizeof(sequence_number) + sizeof(t_send) +
-                                sizeof(t_receive));
+    std::vector<uint8_t> buffer(PACKET_SIZE, 0);
     size_t offset = 0;
 
     std::memcpy(buffer.data() + offset, &sequence_number,
