@@ -47,7 +47,7 @@ class ClockEstimator {
 
     double tx = (clamped_rho - rho_bin[ix]) / (rho_bin[ix + 1] - rho_bin[ix]);
     double ty =
-        (params.beta - beta_bin[iy]) / (beta_bin[iy + 1] - beta_bin[iy]);
+        (clamped_beta - beta_bin[iy]) / (beta_bin[iy + 1] - beta_bin[iy]);
 
     double z00 = z_grid[iy * nx + ix];
     double z10 = z_grid[iy * nx + (ix + 1)];
