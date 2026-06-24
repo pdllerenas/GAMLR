@@ -73,6 +73,13 @@ class ClockEstimator {
     double rho = 4.0 / std::pow(stats.skewness, 2.0);
     double beta = (stats.stddev * stats.skewness) / 2.0;
     double shift = stats.mean - ((2 * stats.stddev) / stats.skewness);
+
+    if (beta > 15 || beta < 0) {
+      throw std::out_of_range("beta out of limits.");
+    }
+    if (rho > 3000 || rho < 0) {
+      throw std::out_of_range("rho out of limits.");
+    }
     return {rho, beta, shift, stats.mean};
   }
 
