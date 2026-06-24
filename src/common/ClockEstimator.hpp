@@ -126,6 +126,8 @@ class ClockEstimator {
 
       forward_transit_times.push_back(static_cast<double>(t_rx - t_tx) /
                                       1000.0);
+      std::cout << "OWD[" << static_cast<int>(i)
+                << "] = " << forward_transit_times[i] << '\n';
       if (i > 0) {
         int64_t prev_rx = static_cast<int64_t>(previous_probe.t_receive);
         packet_separation.push_back(static_cast<double>(t_rx - prev_rx) /
