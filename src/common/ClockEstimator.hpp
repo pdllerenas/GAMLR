@@ -113,6 +113,10 @@ class ClockEstimator {
     for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
       SyncProbe probe{i, GetCurrentTime(), 0};
       client.Send(probe.Serialize());
+
+      if (i < NUM_PACKETS - 1) {
+        std::this_thread::sleep_for(INTER_PACKET_SEPARATION);
+      }
     }
 
     SyncProbe previous_probe{};
