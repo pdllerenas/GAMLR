@@ -7,6 +7,13 @@
 #include <stdexcept>
 #include <vector>
 
+/**
+ * @brief Represents a synchronization probe packet used for clock offset measurement.
+ *
+ * The packet contains a sequence number and two timestamp fields, one for when
+ * the probe was sent and one for when it was received. Serialization uses
+ * network byte order so packets can be safely transmitted across the network.
+ */
 struct SyncProbe {
   uint8_t sequence_number;
   uint64_t t_send;
@@ -16,6 +23,11 @@ struct SyncProbe {
   static constexpr size_t PAYLOAD_SIZE =
       sizeof(sequence_number) + sizeof(t_send) + sizeof(t_receive);
 
+  /**
+   * @brief Serialize the SyncProbe into a fixed-size network packet.
+   *
+   * @return A 48-byte buffer containing the serialized probe.
+   */
   std::vector<uint8_t> Serialize() const {
     std::vector<uint8_t> buffer(PACKET_SIZE, 0);
     size_t offset = 0;
@@ -34,6 +46,14 @@ struct SyncProbe {
     return buffer;
   }
 
+  /**
+   * @brief Deserialize a SyncProbe packet from a byte buffer.
+   *
+   * @param data Byte buffer containing the serialized probe.
+   * @return Deserialized SyncProbe instance.
+   *
+   * @throws std::runtime_error If the provided buffer is too small.
+   */
   static SyncProbe Deserialize(const std::vector<uint8_t>& data) {
     if (data.size() < PAYLOAD_SIZE) {  // 1 + 8 + 8 bytes
       throw std::runtime_error("Malformed packet received: insufficient bytes");

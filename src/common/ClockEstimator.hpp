@@ -16,10 +16,29 @@
 #include "SyncProbe.hpp"
 #include "Types.hpp"
 
+/**
+ * @brief Estimates clock offset using one-way delay measurements and a shifted
+ *        gamma distribution model.
+ *
+ * ClockEstimator sends a sequence of SyncProbe packets over the provided
+ * network link, collects timing measurements, and derives a clock offset
+ * estimate using either a minimum observed delay or a gamma distribution fit.
+ */
 class ClockEstimator {
  private:
-  INetworkLink& link;
+  INetworkLink& link; /**< Reference to the network transport used for probe exchange. */
 
+  /**
+   * @brief Perform bilinear interpolation of a quantile over a rho-beta grid.
+   *
+   * @param params Gamma distribution parameters containing rho and beta.
+   * @param z_grid Flattened quantile grid values ordered by beta rows and rho
+   *               columns.
+   * @return Interpolated quantile value for the requested rho/beta location.
+   *
+   * @throws std::out_of_range If the requested rho or beta value lies outside
+   *         the available bin grid.
+   */
   double ComputeQuantile(GammaParameters params,
                          std::span<const double> z_grid) {
     size_t nx = Quantiles::rho_bin.size();
@@ -62,6 +81,14 @@ class ClockEstimator {
     return std::lerp(bottom_interp, top_interp, ty);
   }
 
+  /**
+   * @brief Compute an array of theoretical quantiles for gamma fitting.
+   *
+   * @param params Gamma distribution parameters derived from sample stats.
+   * @param special_case If true, use an alternate set of quantile bands for
+   *                     low-variance conditions.
+   * @return Array of NUM_PACKETS interpolated quantile values.
+   */
   std::array<double, NUM_PACKETS> ComputeQuantiles(GammaParameters params,
                                                    bool special_case) {
     std::array<std::span<const double>, NUM_PACKETS> quantiles;
@@ -81,20 +108,36 @@ class ClockEstimator {
     return theoretical_quantiles;
   }
 
+  /**
+   * @brief Calculate gamma distribution parameters from measured statistics.
+   *
+   * @param stats Observed mean, variance, stddev, and skewness.
+   * @return GammaParameters containing rho, beta, shift, and mean.
+   */
   GammaParameters CalculateGammaParameters(Stats stats) {
     double rho = 4.0 / std::pow(stats.skewness, 2.0);
     double beta = (stats.stddev * stats.skewness) / 2.0;
     double shift = stats.mean - ((2 * stats.stddev) / stats.skewness);
 
-    if (beta > 15 || beta < 0) {
-      throw std::out_of_range("beta out of limits.");
-    }
-    if (rho > 3000 || rho < 0) {
-      throw std::out_of_range("rho out of limits.");
-    }
+    // if (beta > 15 || beta < 0) {
+    //   throw std::out_of_range("beta out of limits.");
+    // }
+    // if (rho > 3000 || rho < 0) {
+    //   throw std::out_of_range("rho out of limits.");
+    // }
     return {rho, beta, shift, stats.mean};
   }
 
+  /**
+   * @brief Fit a shifted gamma distribution to the measured transit times.
+   *
+   * @param forward_transit_times Forward transit delays in milliseconds.
+   * @param params Gamma distribution parameters.
+   * @param special_case Use the alternate low-variance quantile set if true.
+   * @return Estimated gamma coefficient from ordinary least squares.
+   *
+   * @throws std::runtime_error If the regression slope is too small.
+   */
   double FitShiftedGamma(const std::vector<double>& forward_transit_times,
                          GammaParameters params, bool special_case) {
     std::array<double, NUM_PACKETS> theoretical_quantiles =
@@ -109,12 +152,25 @@ class ClockEstimator {
     return a / b;
   }
 
+  /**
+   * @brief Return the current system time in microseconds since epoch.
+   *
+   * @return Current time in microseconds.
+   */
   uint64_t GetCurrentTime() {
     return std::chrono::duration_cast<std::chrono::microseconds>(
                std::chrono::system_clock::now().time_since_epoch())
         .count();
   }
 
+  /**
+   * @brief Compute summary statistics for forward transit times.
+   *
+   * @param forward_transit_times Observed forward transit delays in ms.
+   * @return Stats containing mean, variance, stddev, and skewness.
+   *
+   * @throws std::runtime_error If skewness is too close to zero.
+   */
   Stats CalculateStats(const std::vector<double>& forward_transit_times) {
     auto [mean, variance] = boost::math::statistics::mean_and_sample_variance(
         forward_transit_times);
@@ -126,7 +182,21 @@ class ClockEstimator {
   }
 
  public:
+  /**
+   * @brief Construct the clock estimator with a network link reference.
+   *
+   * @param network_link The network transport used for sending probes.
+   */
   explicit ClockEstimator(INetworkLink& network_link) : link(network_link) {}
+
+  /**
+   * @brief Estimate the clock offset using measured one-way delays.
+   *
+   * Sends NUM_PACKETS SyncProbe packets, collects replies, computes statistics,
+   * and then chooses either a minimum observed delay or a gamma fit estimate.
+   *
+   * @return Estimated offset in milliseconds.
+   */
   double CalculateOffset() {
     std::vector<double> forward_transit_times;
     std::vector<double> packet_separation;

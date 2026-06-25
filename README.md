@@ -10,6 +10,15 @@ https://doi.org/10.1016/j.comcom.2014.07.006.
 `cmake -DCMAKE_BUILD_TYPE=Release ..`
 `make`
 
+## Dependencies
+- `cmake` for build generation
+- `make` for build execution
+- `Boost` libraries for statistics and regression support
+- A POSIX-compatible C++ toolchain
+
+### Installing dependencies on Ubuntu/Debian
+`sudo apt-get update && sudo apt-get install -y cmake make libboost-all-dev`
+
 ### Note
 If `make/cmake` is not available, and `boost` cannot be installed, we can only compile `client_main.cpp`, as it does not require any of them.
 Instead, use `g++ client_main.cpp -O3 -o delay_server`
@@ -18,6 +27,21 @@ Instead, use `g++ client_main.cpp -O3 -o delay_server`
 First, execute the server instance (assuming `cd`'d into `build/`):
 `./src/delay_server <port>`
 `./src/delay_client <server-ip> <port>`
+
+## Clock Offset Estimation
+This project implements a model-based offset approximation using one-way
+packet delays and a shifted gamma distribution fit.
+
+- The client sends a fixed number of `SyncProbe` packets to the server.
+- Each probe records send and receive timestamps to compute forward transit
+  times.
+- The estimator computes statistics from observed delays: mean, variance,
+  standard deviation, and skewness.
+- If the traffic is low variance with ideal packet separation, the offset is
+  estimated as the minimum observed delay.
+- Otherwise, the estimator converts statistics into gamma distribution
+  parameters and performs a least-squares fit against precomputed quantile
+  tables.
 
 ## Molote
 ### Public IP:

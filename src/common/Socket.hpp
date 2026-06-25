@@ -13,19 +13,44 @@
 #include <utility>
 #include <vector>
 
+/**
+ * @brief Abstract interface for sending and receiving network packet data.
+ */
 class INetworkLink {
  public:
+  /**
+   * @brief Send raw packet data over the network.
+   *
+   * @param data Packet bytes to transmit.
+   */
   virtual void Send(const std::vector<uint8_t>& data) = 0;
+
+  /**
+   * @brief Receive raw packet data from the network.
+   *
+   * @param max_bytes Maximum number of bytes to read.
+   * @return Received packet bytes.
+   */
   virtual std::vector<uint8_t> Receive(size_t max_bytes) = 0;
+
   virtual ~INetworkLink() = default;
 };
 
+/**
+ * @brief Base class for low-level socket management.
+ *
+ * Handles socket creation, destructor cleanup, and move-only semantics.
+ */
 class BaseSocket {
  protected:
   int fd{-1};
 
  public:
-  // base constructor handles creation
+  /**
+   * @brief Construct a UDP socket file descriptor.
+   *
+   * @throws std::system_error If socket creation fails.
+   */
   BaseSocket() {
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd < 0) {
@@ -47,16 +72,26 @@ class BaseSocket {
     return *this;
   }
 
-  // destructor must close socket
+  /**
+   * @brief Close the socket file descriptor when the object goes out of scope.
+   */
   virtual ~BaseSocket() {
     if (fd >= 0) {
       close(fd);
     }
   }
 
+  /**
+   * @brief Get the underlying socket file descriptor.
+   *
+   * @return Socket file descriptor.
+   */
   [[nodiscard]] int get_fd() const noexcept { return fd; }
 };
 
+/**
+ * @brief UDP server socket used to receive packets from remote clients.
+ */
 class UDPServer : public BaseSocket {
  public:
   explicit UDPServer(uint16_t port) : BaseSocket() {
@@ -72,7 +107,15 @@ class UDPServer : public BaseSocket {
     }
   }
 
-  // recvfrom wrapper
+  /**
+   * @brief Receive data from a remote sender.
+   *
+   * @param max_bytes Maximum number of bytes to read.
+   * @param sender_addr Output parameter filled with the sender address.
+   * @return Received packet bytes.
+   *
+   * @throws std::system_error If recvfrom fails.
+   */
   std::vector<uint8_t> ReceiveFrom(size_t max_bytes,
                                    struct sockaddr_in& sender_addr) {
     std::vector<uint8_t> buffer(max_bytes);
@@ -90,7 +133,14 @@ class UDPServer : public BaseSocket {
     return buffer;
   }
 
-  // sendto wrapper
+  /**
+   * @brief Send a packet to the specified destination address.
+   *
+   * @param data Packet bytes to send.
+   * @param dest_addr Destination socket address.
+   *
+   * @throws std::system_error If sendto fails.
+   */
   void SendTo(const std::vector<uint8_t>& data,
               const struct sockaddr_in& dest_addr) {
     ssize_t sent = sendto(fd, data.data(), data.size(), 0,
@@ -102,8 +152,23 @@ class UDPServer : public BaseSocket {
   }
 };
 
+/**
+ * @brief UDP client socket implementing the generic network link interface.
+ *
+ * This class connects to a specific server address and provides simple
+ * Send/Receive operations for packet-based communication.
+ */
 class UDPClient : public BaseSocket, public INetworkLink {
  public:
+  /**
+   * @brief Construct a UDP client and connect it to the remote server.
+   *
+   * @param ip Remote server IPv4 address.
+   * @param port Remote server UDP port.
+   *
+   * @throws std::invalid_argument If the IP address format is invalid.
+   * @throws std::system_error If socket connect fails.
+   */
   explicit UDPClient(const std::string& ip, uint16_t port) : BaseSocket() {
     struct sockaddr_in server_addr{};
     server_addr.sin_family = AF_INET;
@@ -119,6 +184,13 @@ class UDPClient : public BaseSocket, public INetworkLink {
     }
   }
 
+  /**
+   * @brief Send packet data to the connected remote server.
+   *
+   * @param data Packet bytes to transmit.
+   *
+   * @throws std::system_error If send fails.
+   */
   void Send(const std::vector<uint8_t>& data) override {
     ssize_t sent = send(fd, data.data(), data.size(), 0);
     if (sent < 0) {
@@ -126,6 +198,14 @@ class UDPClient : public BaseSocket, public INetworkLink {
     }
   }
 
+  /**
+   * @brief Receive a packet from the connected remote server.
+   *
+   * @param max_bytes Maximum number of bytes to read.
+   * @return Received packet bytes.
+   *
+   * @throws std::system_error If recv fails.
+   */
   std::vector<uint8_t> Receive(size_t max_bytes) override {
     std::vector<uint8_t> buffer(max_bytes);
     ssize_t bytes = recv(fd, buffer.data(), buffer.size(), 0);
