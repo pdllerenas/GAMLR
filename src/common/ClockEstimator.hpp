@@ -34,8 +34,6 @@ class ClockEstimator {
                                  Quantiles::rho_bin.end(), clamped_rho);
     auto it_y = std::lower_bound(Quantiles::beta_bin.begin(),
                                  Quantiles::beta_bin.end(), clamped_beta);
-    std::cout << "beta: " << clamped_beta << '\n';
-    std::cout << "rho: " << clamped_rho << '\n';
 
     if (it_x == Quantiles::rho_bin.end() ||
         it_x == Quantiles::rho_bin.begin() ||
