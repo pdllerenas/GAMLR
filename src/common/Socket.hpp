@@ -13,6 +13,13 @@
 #include <utility>
 #include <vector>
 
+class INetworkLink {
+ public:
+  virtual void Send(const std::vector<uint8_t>& data) = 0;
+  virtual std::vector<uint8_t> Receive(size_t max_bytes) = 0;
+  virtual ~INetworkLink() = default;
+};
+
 class BaseSocket {
  protected:
   int fd{-1};
@@ -95,7 +102,7 @@ class UDPServer : public BaseSocket {
   }
 };
 
-class UDPClient : public BaseSocket {
+class UDPClient : public BaseSocket, public INetworkLink {
  public:
   explicit UDPClient(const std::string& ip, uint16_t port) : BaseSocket() {
     struct sockaddr_in server_addr{};
@@ -112,14 +119,14 @@ class UDPClient : public BaseSocket {
     }
   }
 
-  void Send(const std::vector<uint8_t>& data) {
+  void Send(const std::vector<uint8_t>& data) override {
     ssize_t sent = send(fd, data.data(), data.size(), 0);
     if (sent < 0) {
       throw std::system_error(errno, std::system_category(), "Error: send");
     }
   }
 
-  std::vector<uint8_t> Receive(size_t max_bytes) {
+  std::vector<uint8_t> Receive(size_t max_bytes) override {
     std::vector<uint8_t> buffer(max_bytes);
     ssize_t bytes = recv(fd, buffer.data(), buffer.size(), 0);
 
