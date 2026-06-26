@@ -59,7 +59,6 @@ class BaseSocket {
     }
   }
 
-  // delete copy semantics
   BaseSocket(const BaseSocket&) = delete;
   BaseSocket& operator=(const BaseSocket&) = delete;
 
@@ -181,6 +180,13 @@ class UDPClient : public BaseSocket, public INetworkLink {
     if (connect(fd, reinterpret_cast<struct sockaddr*>(&server_addr),
                 sizeof(server_addr)) < 0) {
       throw std::system_error(errno, std::system_category(), "Error: connect");
+    }
+
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+      std::cerr << "Warning: Failed to set client socket timeout.\n";
     }
   }
 
