@@ -86,16 +86,16 @@ int main(int argc, char** argv) {
           }
         }
 
-        std::cout << "\n[Session] Trigger received. Probing backward path...\n";
+        std::cout << "\nTrigger received. Probing backward path...\n";
         ServerSession session(server, client_addr);
 
         ClockEstimator estimator(session);
         double server_offset = estimator.CalculateOffset();
 
-        std::cout << "[Session] Sending calculated offset (" << server_offset
+        std::cout << "Sending calculated offset (" << server_offset
                   << ") to client...\n";
         server.SendTo(SerializeDouble(server_offset), client_addr);
-        std::cout << "[Session] Complete. Resetting state.\n";
+        std::cout << "Complete. Resetting state.\n";
 
       } catch (const std::system_error& e) {
         if (e.code().value() == EAGAIN || e.code().value() == EWOULDBLOCK) {

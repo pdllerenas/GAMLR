@@ -26,7 +26,8 @@
  */
 class ClockEstimator {
  private:
-  INetworkLink& link; /**< Reference to the network transport used for probe exchange. */
+  INetworkLink&
+      link; /**< Reference to the network transport used for probe exchange. */
 
   /**
    * @brief Perform bilinear interpolation of a quantile over a rho-beta grid.
@@ -42,39 +43,53 @@ class ClockEstimator {
   double ComputeQuantile(GammaParameters params,
                          std::span<const double> z_grid) {
     size_t nx = Quantiles::rho_bin.size();
-    // size_t ny = beta_bin.size();
 
     double clamped_rho = std::clamp(params.rho, Quantiles::rho_bin.front(),
                                     Quantiles::rho_bin.back());
     double clamped_beta = std::clamp(params.beta, Quantiles::beta_bin.front(),
                                      Quantiles::beta_bin.back());
 
-    auto it_x = std::lower_bound(Quantiles::rho_bin.begin(),
-                                 Quantiles::rho_bin.end(), clamped_rho);
-    auto it_y = std::lower_bound(Quantiles::beta_bin.begin(),
-                                 Quantiles::beta_bin.end(), clamped_beta);
-
-    if (it_x == Quantiles::rho_bin.end() ||
-        it_x == Quantiles::rho_bin.begin() ||
-        it_y == Quantiles::beta_bin.end() ||
-        it_y == Quantiles::beta_bin.begin()) {
-      throw std::out_of_range(
-          "Requested point is outside the interpolation grid.");
+    size_t ix;
+    if (clamped_rho <= Quantiles::rho_bin.front()) {
+      ix = 0;
+    } else if (clamped_rho >= Quantiles::rho_bin.back()) {
+      ix = Quantiles::rho_bin.size() - 2;
+    } else {
+      auto it_x = std::lower_bound(Quantiles::rho_bin.begin(),
+                                   Quantiles::rho_bin.end(), clamped_rho);
+      ix = std::distance(Quantiles::rho_bin.begin(), it_x) - 1;
     }
 
-    size_t ix = std::distance(Quantiles::rho_bin.begin(), it_x) - 1;
-    size_t iy = std::distance(Quantiles::beta_bin.begin(), it_y) - 1;
+    size_t iy;
+    if (clamped_beta <= Quantiles::beta_bin.front()) {
+      iy = 0;
+    } else if (clamped_beta >= Quantiles::beta_bin.back()) {
+      iy = Quantiles::beta_bin.size() - 2;
+    } else {
+      auto it_y = std::lower_bound(Quantiles::beta_bin.begin(),
+                                   Quantiles::beta_bin.end(), clamped_beta);
+      iy = std::distance(Quantiles::beta_bin.begin(), it_y) - 1;
+    }
+
+    // Ensure we don't read off the end of the Z grid
+    size_t max_required_index = (iy + 1) * nx + (ix + 1);
+    if (max_required_index >= z_grid.size()) {
+      throw std::runtime_error(
+          "Grid dimension mismatch. Attempted to access index " +
+          std::to_string(max_required_index));
+    }
 
     double tx = (clamped_rho - Quantiles::rho_bin[ix]) /
                 (Quantiles::rho_bin[ix + 1] - Quantiles::rho_bin[ix]);
-    double ty =
-        (clamped_beta - Quantiles::beta_bin[iy]) / (Quantiles::beta_bin[iy + 1] - Quantiles::beta_bin[iy]);
+    double ty = (clamped_beta - Quantiles::beta_bin[iy]) /
+                (Quantiles::beta_bin[iy + 1] - Quantiles::beta_bin[iy]);
 
     double z00 = z_grid[iy * nx + ix];
     double z10 = z_grid[iy * nx + (ix + 1)];
     double z01 = z_grid[(iy + 1) * nx + ix];
     double z11 = z_grid[(iy + 1) * nx + (ix + 1)];
 
+    // Bilinear interpolation
     double bottom_interp = std::lerp(z00, z10, tx);
     double top_interp = std::lerp(z01, z11, tx);
 
@@ -198,65 +213,81 @@ class ClockEstimator {
    * @return Estimated offset in milliseconds.
    */
   double CalculateOffset() {
-    std::vector<double> forward_transit_times;
-    std::vector<double> packet_separation;
+    int max_retries = 5;
+    while (max_retries-- > 0) {
+      try {
+        std::vector<double> forward_transit_times;
+        std::vector<double> packet_separation;
 
-    for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
-      SyncProbe probe{i, GetCurrentTime(), 0};
-      link.Send(probe.Serialize());
+        for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
+          SyncProbe probe{i, GetCurrentTime(), 0};
+          link.Send(probe.Serialize());
 
-      if (i < NUM_PACKETS - 1) {
-        std::this_thread::sleep_for(INTER_PACKET_SEPARATION);
+          if (i < NUM_PACKETS - 1) {
+            std::this_thread::sleep_for(INTER_PACKET_SEPARATION);
+          }
+        }
+
+        SyncProbe previous_probe{};
+
+        for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
+          std::vector<uint8_t> reply = link.Receive(1024);
+          SyncProbe replied_probe = SyncProbe::Deserialize(reply);
+
+          int64_t t_rx = static_cast<int64_t>(replied_probe.t_receive);
+          int64_t t_tx = static_cast<int64_t>(replied_probe.t_send);
+
+          forward_transit_times.push_back(static_cast<double>(t_rx - t_tx) /
+                                          1000.0);
+          std::cout << "OWD[" << static_cast<int>(i)
+                    << "] = " << forward_transit_times[i] << '\n';
+          if (i > 0) {
+            int64_t prev_rx = static_cast<int64_t>(previous_probe.t_receive);
+            packet_separation.push_back(static_cast<double>(t_rx - prev_rx) /
+                                        1000.0);
+          }
+          previous_probe = replied_probe;
+        }
+
+        double avg_packet_separation =
+            boost::math::statistics::mean(packet_separation);
+
+        Stats stats = CalculateStats(forward_transit_times);
+        stats.packet_separation_avg = avg_packet_separation;
+
+        double gamma_coefficient;
+
+        double ips_tolerance_ms =
+            std::chrono::duration<double, std::milli>(IPS_TOLERANCE).count();
+        double lower_bound_ms =
+            std::chrono::duration<double, std::milli>(M_SEC_LOWERBOUND).count();
+        bool is_low_variance(stats.stddev < lower_bound_ms);
+        bool is_ideal_average =
+            (stats.packet_separation_avg >= 0.0) &&
+            (stats.packet_separation_avg < ips_tolerance_ms);
+
+        if (is_low_variance && is_ideal_average) {
+          gamma_coefficient = *std::min_element(forward_transit_times.begin(),
+                                                forward_transit_times.end());
+        } else {
+          GammaParameters params = CalculateGammaParameters(stats);
+          std::sort(forward_transit_times.begin(), forward_transit_times.end());
+          gamma_coefficient =
+              FitShiftedGamma(forward_transit_times, params, is_low_variance);
+        }
+
+        return gamma_coefficient;
+      } catch (const std::system_error& e) {
+        if (e.code().value() == EAGAIN ||
+            e.code().value() ==
+                EWOULDBLOCK) {  // only catch packet lost or timeout
+          std::cerr << "[Network] Packet lost. Retrying (" << max_retries
+                    << " remaining).\n";
+          continue;
+        }
+        throw;  // throw if different error
       }
     }
-
-    SyncProbe previous_probe{};
-
-    for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
-      std::vector<uint8_t> reply = link.Receive(1024);
-      SyncProbe replied_probe = SyncProbe::Deserialize(reply);
-
-      int64_t t_rx = static_cast<int64_t>(replied_probe.t_receive);
-      int64_t t_tx = static_cast<int64_t>(replied_probe.t_send);
-
-      forward_transit_times.push_back(static_cast<double>(t_rx - t_tx) /
-                                      1000.0);
-      std::cout << "OWD[" << static_cast<int>(i)
-                << "] = " << forward_transit_times[i] << '\n';
-      if (i > 0) {
-        int64_t prev_rx = static_cast<int64_t>(previous_probe.t_receive);
-        packet_separation.push_back(static_cast<double>(t_rx - prev_rx) /
-                                    1000.0);
-      }
-      previous_probe = replied_probe;
-    }
-
-    double avg_packet_separation =
-        boost::math::statistics::mean(packet_separation);
-
-    Stats stats = CalculateStats(forward_transit_times);
-    stats.packet_separation_avg = avg_packet_separation;
-
-    double gamma_coefficient;
-
-    double ips_tolerance_ms =
-        std::chrono::duration<double, std::milli>(IPS_TOLERANCE).count();
-    double lower_bound_ms =
-        std::chrono::duration<double, std::milli>(M_SEC_LOWERBOUND).count();
-    bool is_low_variance(stats.stddev < lower_bound_ms);
-    bool is_ideal_average = (stats.packet_separation_avg >= 0.0) &&
-                            (stats.packet_separation_avg < ips_tolerance_ms);
-
-    if (is_low_variance && is_ideal_average) {
-      gamma_coefficient = *std::min_element(forward_transit_times.begin(),
-                                            forward_transit_times.end());
-    } else {
-      GammaParameters params = CalculateGammaParameters(stats);
-      std::sort(forward_transit_times.begin(), forward_transit_times.end());
-      gamma_coefficient =
-          FitShiftedGamma(forward_transit_times, params, is_low_variance);
-    }
-
-    return gamma_coefficient;
+    throw std::runtime_error("Failed to estimate offset: packets were lost.");
   }
 };
