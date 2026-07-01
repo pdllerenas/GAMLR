@@ -66,4 +66,4 @@ We use a Poisson sampling process between each packet pair.
 = Comparison
 == Comparison
 #figure(image("/assets/image-4.png"), caption: [100 Mb/s LCS-MIT])
-#figure(image("/assets/image-5.png"),caption: [100 Mb/s UC Berkley - MIT])
+#figure(image("/assets/image-5.png"), caption: [100 Mb/s UC Berkley - MIT])

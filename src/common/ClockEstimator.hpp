@@ -6,7 +6,6 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
-#include <numeric>
 #include <span>
 #include <stdexcept>
 #include <thread>
@@ -25,9 +24,9 @@
  * estimate using either a minimum observed delay or a gamma distribution fit.
  */
 class ClockEstimator {
- private:
-  INetworkLink&
-      link; /**< Reference to the network transport used for probe exchange. */
+private:
+  INetworkLink
+      &link; /**< Reference to the network transport used for probe exchange. */
 
   /**
    * @brief Perform bilinear interpolation of a quantile over a rho-beta grid.
@@ -153,7 +152,7 @@ class ClockEstimator {
    *
    * @throws std::runtime_error If the regression slope is too small.
    */
-  double FitShiftedGamma(const std::vector<double>& forward_transit_times,
+  double FitShiftedGamma(const std::vector<double> &forward_transit_times,
                          GammaParameters params, bool special_case) {
     std::array<double, NUM_PACKETS> theoretical_quantiles =
         ComputeQuantiles(params, special_case);
@@ -163,7 +162,8 @@ class ClockEstimator {
     }
     const auto [a, b] = boost::math::statistics::simple_ordinary_least_squares(
         ftt_doubles, theoretical_quantiles);
-    if (std::abs(b) < 1e-12) throw std::runtime_error("slope too small");
+    if (std::abs(b) < 1e-12)
+      throw std::runtime_error("slope too small");
     return a / b;
   }
 
@@ -186,7 +186,7 @@ class ClockEstimator {
    *
    * @throws std::runtime_error If skewness is too close to zero.
    */
-  Stats CalculateStats(const std::vector<double>& forward_transit_times) {
+  Stats CalculateStats(const std::vector<double> &forward_transit_times) {
     auto [mean, variance] = boost::math::statistics::mean_and_sample_variance(
         forward_transit_times);
     double stddev = std::sqrt(variance);
@@ -196,13 +196,13 @@ class ClockEstimator {
     return {mean, variance, stddev, skewness, 0};
   }
 
- public:
+public:
   /**
    * @brief Construct the clock estimator with a network link reference.
    *
    * @param network_link The network transport used for sending probes.
    */
-  explicit ClockEstimator(INetworkLink& network_link) : link(network_link) {}
+  explicit ClockEstimator(INetworkLink &network_link) : link(network_link) {}
 
   /**
    * @brief Estimate the clock offset using measured one-way delays.
@@ -266,26 +266,27 @@ class ClockEstimator {
             (stats.packet_separation_avg >= 0.0) &&
             (stats.packet_separation_avg < ips_tolerance_ms);
 
+        GammaParameters params = CalculateGammaParameters(stats);
+        std::cout << "rho: " << params.rho << "\nbeta: " << params.beta << '\n';
         if (is_low_variance && is_ideal_average) {
           gamma_coefficient = *std::min_element(forward_transit_times.begin(),
                                                 forward_transit_times.end());
         } else {
-          GammaParameters params = CalculateGammaParameters(stats);
           std::sort(forward_transit_times.begin(), forward_transit_times.end());
           gamma_coefficient =
               FitShiftedGamma(forward_transit_times, params, is_low_variance);
         }
 
         return gamma_coefficient;
-      } catch (const std::system_error& e) {
+      } catch (const std::system_error &e) {
         if (e.code().value() == EAGAIN ||
             e.code().value() ==
-                EWOULDBLOCK) {  // only catch packet lost or timeout
+                EWOULDBLOCK) { // only catch packet lost or timeout
           std::cerr << "[Network] Packet lost. Retrying (" << max_retries
                     << " remaining).\n";
           continue;
         }
-        throw;  // throw if different error
+        throw; // throw if different error
       }
     }
     throw std::runtime_error("Failed to estimate offset: packets were lost.");
