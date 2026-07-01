@@ -64,4 +64,3 @@ packet delays and a shifted gamma distribution fit.
 
 ### Copy File
 `scp -r -P 2235 <file> <user@molote.cimat.mx:/home/user/destination>`
-
