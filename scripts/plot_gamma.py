@@ -48,7 +48,6 @@ if HOST != LOCAL_HOST:
 
     print(f"Starting UDP Server on {HOST}:{PORT}...")
     stdin, stdout, stderr = ssh_client.exec_command(f"{SERVER_BIN} {PORT}")
-    time.sleep(2)
     print(f"Running UDP Client against {HOST}:{PORT}...")
     # run() executes the client and blocks until it finishes
     client_process = subprocess.run(
@@ -62,7 +61,6 @@ else:
         [SERVER_BIN, PORT], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
 
-    # Give the server 1 second to start up and bind to the port
     time.sleep(1)
 
     print(f"Running UDP Client against {HOST}:{PORT}...")
@@ -83,10 +81,10 @@ if client_process.returncode != 0:
     print(f"Client execution failed:\n{client_process.stderr}")
     sys.exit(1)
 
-owd_samples = [float(match) for match in re.findall(r"OWD\[\d+\] = ([\d\.]+)", output)]
-rho_match = re.search(r"rho:\s*([\d\.]+)", output)
-beta_match = re.search(r"beta:\s*([\d\.]+)", output)
-offset_match = re.search(r"Local Offset \(gamma\):\s*([\d\.\-]+)", output)
+owd_samples = [float(match) for match in re.findall(r"OWD\[\d+\] = ([-0-9.]+)", output)]
+rho_match = re.search(r"rho:\s*([-0-9.]+)", output)
+beta_match = re.search(r"beta:\s*([-0-9.]+)", output)
+offset_match = re.search(r"Local Offset \(gamma\):\s*([-0-9.]+)", output)
 
 
 if not owd_samples or not rho_match or not beta_match or not offset_match:
@@ -107,8 +105,11 @@ shift = mean_owd - (rho * beta)
 
 # === Generate the Gamma Distribution ===
 # Create an X-axis range starting exactly at the 'shift' and going past your max OWD
-x_min = min(shift, estimated_offset) * 0.8
-x_max = max(owd_samples) * 1.1
+x_range = max(owd_samples) - min(shift, estimated_offset)
+if x_range <= 0:
+    x_range = 10.0
+x_min = min(shift, estimated_offset) - (x_range * 0.1)
+x_max = max(owd_samples) + (x_range * 0.3)
 x = np.linspace(x_min, x_max, 1000)
 
 pdf = gamma.pdf(x, a=rho, loc=shift, scale=beta)
