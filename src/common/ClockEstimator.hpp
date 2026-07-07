@@ -30,73 +30,6 @@ private:
   size_t packet_size;
 
   /**
-   * @brief Perform bilinear interpolation of a quantile over a rho-beta grid.
-   *
-   * @param params Gamma distribution parameters containing rho and beta.
-   * @param z_grid Flattened quantile grid values ordered by beta rows and rho
-   *               columns.
-   * @return Interpolated quantile value for the requested rho/beta location.
-   *
-   * @throws std::out_of_range If the requested rho or beta value lies outside
-   *         the available bin grid.
-   */
-  double ComputeQuantile(GammaParameters params,
-                         std::span<const double> z_grid) {
-    size_t nx = Quantiles::rho_bin.size();
-
-    double clamped_rho = std::clamp(params.rho, Quantiles::rho_bin.front(),
-                                    Quantiles::rho_bin.back());
-    double clamped_beta = std::clamp(params.beta, Quantiles::beta_bin.front(),
-                                     Quantiles::beta_bin.back());
-
-    size_t ix;
-    if (clamped_rho <= Quantiles::rho_bin.front()) {
-      ix = 0;
-    } else if (clamped_rho >= Quantiles::rho_bin.back()) {
-      ix = Quantiles::rho_bin.size() - 2;
-    } else {
-      auto it_x = std::lower_bound(Quantiles::rho_bin.begin(),
-                                   Quantiles::rho_bin.end(), clamped_rho);
-      ix = std::distance(Quantiles::rho_bin.begin(), it_x) - 1;
-    }
-
-    size_t iy;
-    if (clamped_beta <= Quantiles::beta_bin.front()) {
-      iy = 0;
-    } else if (clamped_beta >= Quantiles::beta_bin.back()) {
-      iy = Quantiles::beta_bin.size() - 2;
-    } else {
-      auto it_y = std::lower_bound(Quantiles::beta_bin.begin(),
-                                   Quantiles::beta_bin.end(), clamped_beta);
-      iy = std::distance(Quantiles::beta_bin.begin(), it_y) - 1;
-    }
-
-    // Ensure we don't read off the end of the Z grid
-    size_t max_required_index = (iy + 1) * nx + (ix + 1);
-    if (max_required_index >= z_grid.size()) {
-      throw std::runtime_error(
-          "Grid dimension mismatch. Attempted to access index " +
-          std::to_string(max_required_index));
-    }
-
-    double tx = (clamped_rho - Quantiles::rho_bin[ix]) /
-                (Quantiles::rho_bin[ix + 1] - Quantiles::rho_bin[ix]);
-    double ty = (clamped_beta - Quantiles::beta_bin[iy]) /
-                (Quantiles::beta_bin[iy + 1] - Quantiles::beta_bin[iy]);
-
-    double z00 = z_grid[iy * nx + ix];
-    double z10 = z_grid[iy * nx + (ix + 1)];
-    double z01 = z_grid[(iy + 1) * nx + ix];
-    double z11 = z_grid[(iy + 1) * nx + (ix + 1)];
-
-    // Bilinear interpolation
-    double bottom_interp = std::lerp(z00, z10, tx);
-    double top_interp = std::lerp(z01, z11, tx);
-
-    return std::lerp(bottom_interp, top_interp, ty);
-  }
-
-  /**
    * @brief Compute an array of theoretical quantiles for gamma fitting.
    *
    * @param params Gamma distribution parameters derived from sample stats.
@@ -106,19 +39,16 @@ private:
    */
   std::array<double, NUM_PACKETS> ComputeQuantiles(GammaParameters params,
                                                    bool special_case) {
-    std::array<std::span<const double>, NUM_PACKETS> quantiles;
     std::array<double, NUM_PACKETS> theoretical_quantiles;
+    std::array<double, NUM_PACKETS> probabilities;
     if (special_case) {
-      quantiles = {Quantiles::quantil40_bin, Quantiles::quantil45_bin,
-                   Quantiles::quantil50_bin, Quantiles::quantil55_bin,
-                   Quantiles::quantil60_bin};
+        probabilities = {0.40, 0.45, 0.50, 0.55, 0.60};
     } else {
-      quantiles = {Quantiles::quantil16_bin, Quantiles::quantil33_bin,
-                   Quantiles::quantil50_bin, Quantiles::quantil67_bin,
-                   Quantiles::quantil83_bin};
+        probabilities = {0.166666, 0.333333, 0.50, 0.666666, 0.833333};
     }
-    for (size_t i = 0; i < quantiles.size(); ++i) {
-      theoretical_quantiles[i] = ComputeQuantile(params, quantiles[i]);
+    boost::math::gamma_distribution<double> dist(params.rho, params.beta);
+    for (size_t i = 0; i < NUM_PACKETS; ++i) {
+        theoretical_quantiles[i] = boost::math::quantile(dist, probabilities[i]);
     }
     return theoretical_quantiles;
   }
