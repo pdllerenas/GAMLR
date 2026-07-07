@@ -26,37 +26,38 @@ uint64_t GetCurrentTimeClient() {
 
 int main(int argc, char** argv) {
   if (argc < 3) {
-    std::cerr << "Usage: ./delay_client <Server_IP> <Port>\n";
+    std::cerr << "Usage: ./delay_client <Server_IP> <Port> [Packet Size]\n";
     return EXIT_FAILURE;
   }
 
   std::string ip = argv[1];
   uint16_t port = static_cast<uint16_t>(std::stoi(argv[2]));
+  size_t packet_size = (argc >= 4) ? std::stoul(argv[3]) : 48;
 
   try {
     std::cout << "Connecting to Server at " << ip << ":" << port << "...\n";
     UDPClient client(ip, port);
-    ClockEstimator estimator(client);
+    ClockEstimator estimator(client, packet_size);
 
     std::cout << "Probing forward path...\n";
     double local_offset = estimator.CalculateOffset();
 
     std::cout << "Server probing...\n";
     SyncProbe trigger{PHASE_TRIGGER, 0, 0};
-    client.Send(trigger.Serialize());
+    client.Send(trigger.Serialize(packet_size));
 
     std::cout << "Echoing Server probes...\n";
     for (size_t i = 0; i < NUM_PACKETS; ++i) {
-      auto data = client.Receive(1024);
+      auto data = client.Receive(65536);
       if (data.size() >= SyncProbe::PAYLOAD_SIZE) {
         SyncProbe probe = SyncProbe::Deserialize(data);
         probe.t_receive = GetCurrentTimeClient();
-        client.Send(probe.Serialize());
+        client.Send(probe.Serialize(data.size()));
       }
     }
 
     std::cout << "Awaiting Collaborative Offset data...\n";
-    auto final_data = client.Receive(1024);
+    auto final_data = client.Receive(65536);
     double server_offset = DeserializeDouble(final_data);
 
     double collaborative_offset = (server_offset - local_offset) / 2.0;

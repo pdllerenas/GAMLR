@@ -19,7 +19,6 @@ struct SyncProbe {
   uint64_t t_send;
   uint64_t t_receive;
 
-  static constexpr size_t PACKET_SIZE = 48;
   static constexpr size_t PAYLOAD_SIZE =
       sizeof(sequence_number) + sizeof(t_send) + sizeof(t_receive);
 
@@ -28,8 +27,9 @@ struct SyncProbe {
    *
    * @return A 48-byte buffer containing the serialized probe.
    */
-  std::vector<uint8_t> Serialize() const {
-    std::vector<uint8_t> buffer(PACKET_SIZE, 0);
+  std::vector<uint8_t> Serialize(size_t target_size = 48) const {
+    if (target_size < PAYLOAD_SIZE) target_size = PAYLOAD_SIZE;
+    std::vector<uint8_t> buffer(target_size, 0);
     size_t offset = 0;
 
     std::memcpy(buffer.data() + offset, &sequence_number,

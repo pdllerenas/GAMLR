@@ -1,4 +1,4 @@
-#include <sys/time.h> 
+#include <sys/time.h>
 
 #include <cerrno>
 #include <chrono>
@@ -68,9 +68,10 @@ int main(int argc, char** argv) {
       try {
         struct sockaddr_in client_addr{};
         bool trigger_received = false;
+        size_t negotiated_packet_size = 48;
 
         while (!trigger_received) {
-          auto data = server.ReceiveFrom(1024, client_addr);
+          auto data = server.ReceiveFrom(65536, client_addr);
           uint64_t rx_time = GetCurrentTime();
 
           if (data.size() >= SyncProbe::PAYLOAD_SIZE) {
@@ -78,18 +79,19 @@ int main(int argc, char** argv) {
 
             if (probe.sequence_number == PHASE_TRIGGER) {
               trigger_received = true;
+              negotiated_packet_size = data.size();
               break;
             }
 
             probe.t_receive = rx_time;
-            server.SendTo(probe.Serialize(), client_addr);
+            server.SendTo(probe.Serialize(data.size()), client_addr);
           }
         }
 
         std::cout << "\nTrigger received. Probing backward path...\n";
         ServerSession session(server, client_addr);
 
-        ClockEstimator estimator(session);
+        ClockEstimator estimator(session, negotiated_packet_size);
         double server_offset = estimator.CalculateOffset();
 
         std::cout << "Sending calculated offset (" << server_offset
