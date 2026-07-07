@@ -18,7 +18,7 @@ struct SyncProbe {
   uint8_t sequence_number;
   uint64_t t_send;
   uint64_t t_receive;
-  uint64_t packet_size;
+  size_t packet_size;
 
   static constexpr size_t PAYLOAD_SIZE =
       sizeof(sequence_number) + sizeof(t_send) + sizeof(t_receive) + sizeof(packet_size);
@@ -44,7 +44,7 @@ struct SyncProbe {
     std::memcpy(buffer.data() + offset, &net_t_receive, sizeof(net_t_receive));
     offset += sizeof(net_t_receive);
 
-    uint64_t net_t_packet_size = htobe64(packet_size);
+    size_t net_t_packet_size = htobe64(packet_size);
     std::memcpy(buffer.data() + offset, &net_t_packet_size, sizeof(net_t_packet_size));
 
     return buffer;
@@ -79,7 +79,7 @@ struct SyncProbe {
     probe.t_receive = be64toh(net_t_receive);
     offset += sizeof(net_t_receive);
 
-    uint64_t net_t_packet_size;
+    size_t net_t_packet_size;
     std::memcpy(&net_t_packet_size, data.data() + offset, sizeof(net_t_packet_size));
     probe.packet_size = be64toh(net_t_packet_size);
 
