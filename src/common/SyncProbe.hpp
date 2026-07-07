@@ -18,10 +18,10 @@ struct SyncProbe {
   uint8_t sequence_number;
   uint64_t t_send;
   uint64_t t_receive;
+  size_t packet_size;
 
-  static constexpr size_t PACKET_SIZE = 48;
   static constexpr size_t PAYLOAD_SIZE =
-      sizeof(sequence_number) + sizeof(t_send) + sizeof(t_receive);
+      sizeof(sequence_number) + sizeof(t_send) + sizeof(t_receive) + sizeof(packet_size);
 
   /**
    * @brief Serialize the SyncProbe into a fixed-size network packet.
@@ -29,7 +29,7 @@ struct SyncProbe {
    * @return A 48-byte buffer containing the serialized probe.
    */
   std::vector<uint8_t> Serialize() const {
-    std::vector<uint8_t> buffer(PACKET_SIZE, 0);
+    std::vector<uint8_t> buffer(packet_size, 0);
     size_t offset = 0;
 
     std::memcpy(buffer.data() + offset, &sequence_number,
@@ -42,6 +42,10 @@ struct SyncProbe {
 
     uint64_t net_t_receive = htobe64(t_receive);
     std::memcpy(buffer.data() + offset, &net_t_receive, sizeof(net_t_receive));
+    offset += sizeof(net_t_receive);
+
+    size_t net_t_packet_size = htobe64(packet_size);
+    std::memcpy(buffer.data() + offset, &net_t_packet_size, sizeof(net_t_packet_size));
 
     return buffer;
   }
@@ -73,6 +77,12 @@ struct SyncProbe {
     uint64_t net_t_receive;
     std::memcpy(&net_t_receive, data.data() + offset, sizeof(net_t_receive));
     probe.t_receive = be64toh(net_t_receive);
+    offset += sizeof(net_t_receive);
+
+    size_t net_t_packet_size;
+    std::memcpy(&net_t_packet_size, data.data() + offset, sizeof(net_t_packet_size));
+    probe.packet_size = be64toh(net_t_packet_size);
+
     return probe;
   }
 };

@@ -27,6 +27,7 @@ class ClockEstimator {
 private:
   INetworkLink
       &link; /**< Reference to the network transport used for probe exchange. */
+  size_t packet_size;
 
   /**
    * @brief Perform bilinear interpolation of a quantile over a rho-beta grid.
@@ -70,7 +71,6 @@ private:
       iy = std::distance(Quantiles::beta_bin.begin(), it_y) - 1;
     }
 
-    // Ensure we don't read off the end of the Z grid
     size_t max_required_index = (iy + 1) * nx + (ix + 1);
     if (max_required_index >= z_grid.size()) {
       throw std::runtime_error(
@@ -202,7 +202,7 @@ public:
    *
    * @param network_link The network transport used for sending probes.
    */
-  explicit ClockEstimator(INetworkLink &network_link) : link(network_link) {}
+  explicit ClockEstimator(INetworkLink &network_link, size_t packet_size) : link(network_link), packet_size(packet_size) {}
 
   /**
    * @brief Estimate the clock offset using measured one-way delays.
@@ -220,7 +220,7 @@ public:
         std::vector<double> packet_separation;
 
         for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
-          SyncProbe probe{i, GetCurrentTime(), 0};
+          SyncProbe probe{i, GetCurrentTime(), 0, packet_size};
           link.Send(probe.Serialize());
 
           if (i < NUM_PACKETS - 1) {
@@ -231,7 +231,7 @@ public:
         SyncProbe previous_probe{};
 
         for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
-          std::vector<uint8_t> reply = link.Receive(1024);
+          std::vector<uint8_t> reply = link.Receive(65000);
           SyncProbe replied_probe = SyncProbe::Deserialize(reply);
 
           int64_t t_rx = static_cast<int64_t>(replied_probe.t_receive);
