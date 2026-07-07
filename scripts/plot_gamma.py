@@ -51,7 +51,7 @@ if HOST != LOCAL_HOST:
     print(f"Running UDP Client against {HOST}:{PORT}...")
     # run() executes the client and blocks until it finishes
     client_process = subprocess.run(
-        [CLIENT_BIN, HOST, PORT, "1500"], capture_output=True, text=True
+        [CLIENT_BIN, HOST, PORT], capture_output=True, text=True
     )
     _ = ssh_client.exec_command("pkill -f delay_server")
     ssh_client.close()
@@ -66,7 +66,7 @@ else:
     print(f"Running UDP Client against {HOST}:{PORT}...")
     # run() executes the client and blocks until it finishes
     client_process = subprocess.run(
-        [CLIENT_BIN, HOST, PORT, "1500"], capture_output=True, text=True
+        [CLIENT_BIN, HOST, PORT], capture_output=True, text=True
     )
 
     server_process.terminate()
@@ -103,9 +103,9 @@ sorted_owd = np.sort(owd_samples)
 p = np.arange(1, len(sorted_owd) + 1) / (len(sorted_owd) + 1)
 theoretical_quantiles = gamma.ppf(p, a=rho, scale=1)
 slope, intercept, r_value, p_value, std_err = linregress(
-    theoretical_quantiles, sorted_owd
+    sorted_owd, theoretical_quantiles
 )
-qq_min_owd = intercept
+qq_min_owd = -intercept / slope
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
 # === Generate the Gamma Distribution ===
@@ -154,9 +154,8 @@ ax1.set_xlim(min(shift, estimated_offset) - (beta * 0.5), x_max)
 
 ax2.plot(sorted_owd, theoretical_quantiles, "ro", label="Empirical vs Theoretical")
 
-x_pad = abs(max(owd_samples) - qq_min_owd) * 0.1
 x_line = np.linspace(qq_min_owd, max(owd_samples), 100)
-y_line = (x_line - intercept) / slope
+y_line = slope * x_line + intercept
 
 ax2.plot(x_line, y_line, "b-", label=f"Linear Fit (R²={r_value**2:.4f})")
 
