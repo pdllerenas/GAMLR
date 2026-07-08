@@ -91,11 +91,12 @@ private:
     for (size_t i = 0; i < NUM_PACKETS; ++i) {
       ftt_doubles[i] = forward_transit_times[i];
     }
+    // Returns the values that best fit a + b * theoretical_quantiles = ftt_doubles
     const auto [a, b] = boost::math::statistics::simple_ordinary_least_squares(
-        ftt_doubles, theoretical_quantiles);
+        theoretical_quantiles, ftt_doubles);
     if (std::abs(b) < 1e-12)
       throw std::runtime_error("slope too small");
-    return a / b;
+    return a;
   }
 
   /**
