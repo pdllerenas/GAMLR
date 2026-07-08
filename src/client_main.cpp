@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -20,7 +21,7 @@ double DeserializeDouble(const std::vector<uint8_t>& data) {
 
 uint64_t GetCurrentTimeClient() {
   return std::chrono::duration_cast<std::chrono::microseconds>(
-             std::chrono::system_clock::now().time_since_epoch())
+             std::chrono::high_resolution_clock::now().time_since_epoch())
       .count();
 }
 
