@@ -20,7 +20,7 @@ std::vector<uint8_t> SerializeDouble(double value) {
 
 uint64_t GetCurrentTime() {
   return std::chrono::duration_cast<std::chrono::microseconds>(
-             std::chrono::system_clock::now().time_since_epoch())
+             std::chrono::high_resolution_clock::now().time_since_epoch())
       .count();
 }
 
