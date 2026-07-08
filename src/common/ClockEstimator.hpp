@@ -6,11 +6,9 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
-#include <span>
 #include <stdexcept>
 #include <thread>
 
-#include "../../data/quantiles_data.hpp"
 #include "Socket.hpp"
 #include "SyncProbe.hpp"
 #include "Types.hpp"
@@ -91,7 +89,8 @@ private:
     for (size_t i = 0; i < NUM_PACKETS; ++i) {
       ftt_doubles[i] = forward_transit_times[i];
     }
-    // Returns the values that best fit a + b * theoretical_quantiles = ftt_doubles
+    // Returns the values that best fit a + b * theoretical_quantiles =
+    // ftt_doubles
     const auto [a, b] = boost::math::statistics::simple_ordinary_least_squares(
         theoretical_quantiles, ftt_doubles);
     if (std::abs(b) < 1e-12)
@@ -167,6 +166,11 @@ public:
           std::vector<uint8_t> reply = link.Receive(65536);
           SyncProbe replied_probe = SyncProbe::Deserialize(reply);
 
+          if (replied_probe.sequence_number != i) {
+            throw std::runtime_error(
+                "Packet sequence mismatch (out of order or stale)");
+          }
+
           int64_t t_rx = static_cast<int64_t>(replied_probe.t_receive);
           int64_t t_tx = static_cast<int64_t>(replied_probe.t_send);
 
@@ -221,7 +225,8 @@ public:
         }
         throw; // throw if different error
       } catch (const std::out_of_range &e) {
-        std::cerr << "[Network] Out of range error: " << e.what() << ". Retrying (" << max_retries << " remaining).\n";
+        std::cerr << "[Network] Out of range error: " << e.what()
+                  << ". Retrying (" << max_retries << " remaining).\n";
         continue;
       }
     }
