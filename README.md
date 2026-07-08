@@ -14,7 +14,6 @@ https://doi.org/10.1016/j.comcom.2014.07.006.
 - `cmake` for build generation
 - `make` for build execution
 - `Boost` libraries for statistics and regression support
-- A POSIX-compatible C++ toolchain
 
 ### Installing dependencies on Ubuntu/Debian
 `sudo apt-get update && sudo apt-get install -y cmake make libboost-all-dev`
