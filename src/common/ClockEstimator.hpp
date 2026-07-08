@@ -35,20 +35,20 @@ private:
    * @param params Gamma distribution parameters derived from sample stats.
    * @param special_case If true, use an alternate set of quantile bands for
    *                     low-variance conditions.
-   * @return Array of NUM_PACKETS interpolated quantile values.
+   * @return Array of NUM_PACKETS quantile values.
    */
   std::array<double, NUM_PACKETS> ComputeQuantiles(GammaParameters params,
                                                    bool special_case) {
     std::array<double, NUM_PACKETS> theoretical_quantiles;
     std::array<double, NUM_PACKETS> probabilities;
     if (special_case) {
-        probabilities = {0.40, 0.45, 0.50, 0.55, 0.60};
+      probabilities = {0.40, 0.45, 0.50, 0.55, 0.60};
     } else {
-        probabilities = {0.166666, 0.333333, 0.50, 0.666666, 0.833333};
+      probabilities = {0.166666, 0.333333, 0.50, 0.666666, 0.833333};
     }
     boost::math::gamma_distribution<double> dist(params.rho, params.beta);
     for (size_t i = 0; i < NUM_PACKETS; ++i) {
-        theoretical_quantiles[i] = boost::math::quantile(dist, probabilities[i]);
+      theoretical_quantiles[i] = boost::math::quantile(dist, probabilities[i]);
     }
     return theoretical_quantiles;
   }
@@ -64,12 +64,12 @@ private:
     double beta = (stats.stddev * stats.skewness) / 2.0;
     double shift = stats.mean - ((2 * stats.stddev) / stats.skewness);
 
-    // if (beta > 15 || beta < 0) {
-    //   throw std::out_of_range("beta out of limits.");
-    // }
-    // if (rho > 3000 || rho < 0) {
-    //   throw std::out_of_range("rho out of limits.");
-    // }
+    if (beta > 15 || beta < 0) {
+      throw std::out_of_range("beta out of limits.");
+    }
+    if (rho > 3000 || rho < 0) {
+      throw std::out_of_range("rho out of limits.");
+    }
     return {rho, beta, shift, stats.mean};
   }
 
@@ -133,7 +133,8 @@ public:
    *
    * @param network_link The network transport used for sending probes.
    */
-  explicit ClockEstimator(INetworkLink &network_link, size_t pkt_size = 48) : link(network_link), packet_size(pkt_size) {}
+  explicit ClockEstimator(INetworkLink &network_link, size_t pkt_size = 48)
+      : link(network_link), packet_size(pkt_size) {}
 
   /**
    * @brief Estimate the clock offset using measured one-way delays.
@@ -218,6 +219,9 @@ public:
           continue;
         }
         throw; // throw if different error
+      } catch (const std::out_of_range &e) {
+        std::cerr << "[Network] Out of range error: " << e.what() << ". Retrying (" << max_retries << " remaining).\n";
+        continue;
       }
     }
     throw std::runtime_error("Failed to estimate offset: packets were lost.");
