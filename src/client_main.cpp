@@ -67,8 +67,12 @@ int main(int argc, char** argv) {
     std::cout << "-----------------------------------\n";
     std::cout << "Local Offset (gamma):  " << local_offset << " ms\n";
     std::cout << "Server Offset (gamma): " << server_offset << " ms\n";
-    std::cout << "Final Symmetrical Offset: " << collaborative_offset
+    std::cout << "Symmetrical Offset: " << collaborative_offset
               << " ms\n";
+    std::cout << "-----------------------------------\n";
+    std::cout << "True Physical Delay Estimates:\n";
+    std::cout << "Forward Latency: " << (local_offset + collaborative_offset) << " ms\n";
+    std::cout << "Backward Latency: " << (server_offset - collaborative_offset) << " ms\n";
     std::cout << "-----------------------------------\n";
 
   } catch (const std::exception& e) {
