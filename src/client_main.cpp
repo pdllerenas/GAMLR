@@ -47,18 +47,20 @@ int main(int argc, char** argv) {
     client.Send(trigger.Serialize(packet_size));
 
     std::cout << "Echoing Server probes...\n";
-    for (size_t i = 0; i < NUM_PACKETS; ++i) {
-      auto data = client.Receive(65536);
-      if (data.size() >= SyncProbe::PAYLOAD_SIZE) {
-        SyncProbe probe = SyncProbe::Deserialize(data);
-        probe.t_receive = GetCurrentTimeClient();
-        client.Send(probe.Serialize(data.size()));
-      }
-    }
+    double server_offset = 0.0;
 
-    std::cout << "Awaiting Collaborative Offset data...\n";
-    auto final_data = client.Receive(65536);
-    double server_offset = DeserializeDouble(final_data);
+    while (true) {
+        auto data = client.Receive(65536);
+
+        if (data.size() == sizeof(double)) {
+            server_offset = DeserializeDouble(data);
+            break;
+        } else if (data.size() >= SyncProbe::PAYLOAD_SIZE) {
+            SyncProbe probe = SyncProbe::Deserialize(data);
+            probe.t_receive = GetCurrentTimeClient();
+            client.Send(probe.Serialize(data.size()));
+        }
+    }
 
     double collaborative_offset = (server_offset - local_offset) / 2.0;
 
