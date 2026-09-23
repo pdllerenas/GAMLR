@@ -5,6 +5,7 @@
 #include <boost/math/statistics/univariate_statistics.hpp>
 #include <chrono>
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
@@ -144,7 +145,7 @@ public:
    *
    * @return Estimated offset in milliseconds.
    */
-  double CalculateOffset() {
+  std::pair<std::vector<double>, double> CalculateOffset() {
     int max_retries = 5;
     while (max_retries-- > 0) {
       try {
@@ -176,8 +177,8 @@ public:
 
           forward_transit_times.push_back(static_cast<double>(t_rx - t_tx) /
                                           1000.0);
-          std::cout << "OWD[" << static_cast<int>(i)
-                    << "] = " << forward_transit_times[i] << '\n';
+          // std::cout << "Transit Time[" << static_cast<int>(i)
+          //           << "] = " << forward_transit_times[i] << '\n';
           if (i > 0) {
             int64_t prev_rx = static_cast<int64_t>(previous_probe.t_receive);
             packet_separation.push_back(static_cast<double>(t_rx - prev_rx) /
@@ -203,7 +204,20 @@ public:
             (stats.packet_separation_avg >= 0.0) &&
             (stats.packet_separation_avg < ips_tolerance_ms);
 
+        auto now = std::chrono::system_clock::now();
+        std::time_t time_now = std::chrono::system_clock::to_time_t(now);
+
+        std::ofstream logger("experiment.log", std::ios::app);
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&time_now), "%Y-%m-%d_%H-%M-%S");
+
         GammaParameters params = CalculateGammaParameters(stats);
+        if (logger.is_open()) {
+          logger << ss.str() << ',' << params.rho << ',' << params.beta << ',';
+					logger.close();
+        } else  {
+					std::cerr << "Error: could not log values.\n";
+				}
         std::cout << "rho: " << params.rho << "\nbeta: " << params.beta << '\n';
         if (is_low_variance && is_ideal_average) {
           gamma_coefficient = *std::min_element(forward_transit_times.begin(),
@@ -214,7 +228,7 @@ public:
               FitShiftedGamma(forward_transit_times, params, is_low_variance);
         }
 
-        return gamma_coefficient;
+        return std::make_pair(forward_transit_times, gamma_coefficient);
       } catch (const std::system_error &e) {
         if (e.code().value() == EAGAIN ||
             e.code().value() ==

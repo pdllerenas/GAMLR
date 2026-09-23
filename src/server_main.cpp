@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
         ServerSession session(server, client_addr);
 
         ClockEstimator estimator(session, negotiated_packet_size);
-        double server_offset = estimator.CalculateOffset();
+        auto [ftt, server_offset] = estimator.CalculateOffset();
 
         std::cout << "Sending calculated offset (" << server_offset
                   << ") to client...\n";

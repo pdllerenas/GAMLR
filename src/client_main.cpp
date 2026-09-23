@@ -65,14 +65,28 @@ int main(int argc, char** argv) {
     }
 
     double collaborative_offset = (server_offset - local_offset) / 2.0;
+    std::ofstream logger("experiment.log", std::ios::app);
+		if (logger.is_open()) {
+			logger << (local_offset + collaborative_offset) << "ms" << '\n';
+			logger.close();
+		} else  {
+			std::cerr << "Error: could not log values.\n";
+		}
 
     std::cout << "-----------------------------------\n";
-    std::cout << "Local Offset (gamma):  " << local_offset << " ms\n";
-    std::cout << "Server Offset (gamma): " << server_offset << " ms\n";
-    std::cout << "Symmetrical Offset: " << collaborative_offset
-              << " ms\n";
+		std::cout << "Adjusted OWD:\n";
+    for (size_t i = 0; i < ftt.size(); i++) {
+      std::cout << "OWD[" << i << "] = " << ftt[i] + collaborative_offset
+                << '\n';
+    }
+
     std::cout << "-----------------------------------\n";
-    std::cout << "One-Way Delay: " << (local_offset + collaborative_offset) << " ms\n";
+    std::cout << "Local Offset:  " << local_offset << " ms\n";
+    std::cout << "Server Offset: " << server_offset << " ms\n";
+    std::cout << "Symmetrical Offset: " << collaborative_offset << " ms\n";
+    std::cout << "-----------------------------------\n";
+    std::cout << "One-Way Delay: " << (local_offset + collaborative_offset)
+              << " ms\n";
     std::cout << "-----------------------------------\n";
 
   } catch (const std::exception& e) {
