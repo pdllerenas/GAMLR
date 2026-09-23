@@ -21,7 +21,7 @@ double DeserializeDouble(const std::vector<uint8_t>& data) {
 
 uint64_t GetCurrentTimeClient() {
   return std::chrono::duration_cast<std::chrono::microseconds>(
-             std::chrono::high_resolution_clock::now().time_since_epoch())
+             std::chrono::system_clock::now().time_since_epoch())
       .count();
 }
 
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     ClockEstimator estimator(client, packet_size);
 
     std::cout << "Probing forward path...\n";
-    double local_offset = estimator.CalculateOffset();
+    auto [ftt, local_offset] = estimator.CalculateOffset();
 
     std::cout << "Server probing...\n";
     SyncProbe trigger{PHASE_TRIGGER, 0, 0};
