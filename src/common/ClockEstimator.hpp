@@ -27,6 +27,7 @@ private:
   INetworkLink
       &link; /**< Reference to the network transport used for probe exchange. */
   size_t packet_size;
+	size_t num_packets;
 
   /**
    * @brief Compute an array of theoretical quantiles for gamma fitting.
@@ -36,10 +37,10 @@ private:
    *                     low-variance conditions.
    * @return Array of NUM_PACKETS quantile values.
    */
-  std::array<double, NUM_PACKETS> ComputeQuantiles(GammaParameters params,
+  std::vector<double> ComputeQuantiles(GammaParameters params,
                                                    bool special_case) {
-    std::array<double, NUM_PACKETS> theoretical_quantiles;
-    std::array<double, NUM_PACKETS> probabilities;
+    std::vector<double> theoretical_quantiles(num_packets);
+    std::vector<double> probabilities(num_packets);
     if (special_case) {
       probabilities = {0.40, 0.45, 0.50, 0.55, 0.60};
     } else {
@@ -84,9 +85,9 @@ private:
    */
   double FitShiftedGamma(const std::vector<double> &forward_transit_times,
                          GammaParameters params, bool special_case) {
-    std::array<double, NUM_PACKETS> theoretical_quantiles =
+    std::vector<double> theoretical_quantiles =
         ComputeQuantiles(params, special_case);
-    std::array<double, NUM_PACKETS> ftt_doubles;
+    std::vector<double> ftt_doubles;
     for (size_t i = 0; i < NUM_PACKETS; ++i) {
       ftt_doubles[i] = forward_transit_times[i];
     }
@@ -134,8 +135,8 @@ public:
    *
    * @param network_link The network transport used for sending probes.
    */
-  explicit ClockEstimator(INetworkLink &network_link, size_t pkt_size = 48)
-      : link(network_link), packet_size(pkt_size) {}
+  explicit ClockEstimator(INetworkLink &network_link, size_t pkt_size = 48, size_t _num_packets = 5)
+      : link(network_link), packet_size(pkt_size), num_packets(_num_packets) {}
 
   /**
    * @brief Estimate the clock offset using measured one-way delays.

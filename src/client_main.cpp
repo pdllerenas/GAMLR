@@ -9,7 +9,7 @@
 
 constexpr uint8_t PHASE_TRIGGER = 255;
 
-double DeserializeDouble(const std::vector<uint8_t>& data) {
+double DeserializeDouble(const std::vector<uint8_t> &data) {
   if (data.size() < sizeof(double)) {
     throw std::runtime_error(
         "Malformed packet: insufficient bytes for double.");
@@ -25,20 +25,22 @@ uint64_t GetCurrentTimeClient() {
       .count();
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   if (argc < 3) {
-    std::cerr << "Usage: ./delay_client <Server_IP> <Port> [Packet Size]\n";
+    std::cerr << "Usage: ./delay_client <Server_IP> <Port> [Packet Size] [Num "
+                 "Packets]\n";
     return EXIT_FAILURE;
   }
 
   std::string ip = argv[1];
   uint16_t port = static_cast<uint16_t>(std::stoi(argv[2]));
   size_t packet_size = (argc >= 4) ? std::stoul(argv[3]) : 48;
+  size_t num_packets = (argc >= 5) ? std::stoul(argv[4]) : 5;
 
   try {
     std::cout << "Connecting to Server at " << ip << ":" << port << "...\n";
     UDPClient client(ip, port);
-    ClockEstimator estimator(client, packet_size);
+    ClockEstimator estimator(client, packet_size, num_packets);
 
     std::cout << "Client time: " << GetCurrentTimeClient() << "\n";
     std::cout << "Probing forward path...\n";
@@ -52,29 +54,29 @@ int main(int argc, char** argv) {
     double server_offset = 0.0;
 
     while (true) {
-        auto data = client.Receive(65536);
+      auto data = client.Receive(65536);
 
-        if (data.size() == sizeof(double)) {
-            server_offset = DeserializeDouble(data);
-            break;
-        } else if (data.size() >= SyncProbe::PAYLOAD_SIZE) {
-            SyncProbe probe = SyncProbe::Deserialize(data);
-            probe.t_receive = GetCurrentTimeClient();
-            client.Send(probe.Serialize(data.size()));
-        }
+      if (data.size() == sizeof(double)) {
+        server_offset = DeserializeDouble(data);
+        break;
+      } else if (data.size() >= SyncProbe::PAYLOAD_SIZE) {
+        SyncProbe probe = SyncProbe::Deserialize(data);
+        probe.t_receive = GetCurrentTimeClient();
+        client.Send(probe.Serialize(data.size()));
+      }
     }
 
     double collaborative_offset = (server_offset - local_offset) / 2.0;
     std::ofstream logger("experiment.log", std::ios::app);
-		if (logger.is_open()) {
-			logger << (local_offset + collaborative_offset) << "ms" << '\n';
-			logger.close();
-		} else  {
-			std::cerr << "Error: could not log values.\n";
-		}
+    if (logger.is_open()) {
+      logger << (local_offset + collaborative_offset) << "ms" << '\n';
+      logger.close();
+    } else {
+      std::cerr << "Error: could not log values.\n";
+    }
 
     std::cout << "-----------------------------------\n";
-		std::cout << "Adjusted OWD:\n";
+    std::cout << "Adjusted OWD:\n";
     for (size_t i = 0; i < ftt.size(); i++) {
       std::cout << "OWD[" << i << "] = " << ftt[i] + collaborative_offset
                 << '\n';
@@ -89,7 +91,7 @@ int main(int argc, char** argv) {
               << " ms\n";
     std::cout << "-----------------------------------\n";
 
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     std::cerr << "Error: " << e.what() << "\n";
     return EXIT_FAILURE;
   }
