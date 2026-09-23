@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
     UDPClient client(ip, port);
     ClockEstimator estimator(client, packet_size);
 
+    std::cout << "Client time: " << GetCurrentTimeClient() << "\n";
     std::cout << "Probing forward path...\n";
     auto [ftt, local_offset] = estimator.CalculateOffset();
 
