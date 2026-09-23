@@ -143,7 +143,8 @@ public:
    * Sends NUM_PACKETS SyncProbe packets, collects replies, computes statistics,
    * and then chooses either a minimum observed delay or a gamma fit estimate.
    *
-   * @return Estimated offset in milliseconds.
+   * @return Pair of Raw forward transit times, estimated offset in
+   * milliseconds.
    */
   std::pair<std::vector<double>, double> CalculateOffset() {
     int max_retries = 5;
