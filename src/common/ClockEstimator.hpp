@@ -27,7 +27,7 @@ private:
   INetworkLink
       &link; /**< Reference to the network transport used for probe exchange. */
   size_t packet_size;
-	size_t num_packets;
+  size_t num_packets;
 
   /**
    * @brief Compute an array of theoretical quantiles for gamma fitting.
@@ -38,7 +38,7 @@ private:
    * @return Array of NUM_PACKETS quantile values.
    */
   std::vector<double> ComputeQuantiles(GammaParameters params,
-                                                   bool special_case) {
+                                       bool special_case) {
     std::vector<double> theoretical_quantiles(num_packets);
     std::vector<double> probabilities(num_packets);
     if (special_case) {
@@ -87,8 +87,8 @@ private:
                          GammaParameters params, bool special_case) {
     std::vector<double> theoretical_quantiles =
         ComputeQuantiles(params, special_case);
-    std::vector<double> ftt_doubles;
-    for (size_t i = 0; i < NUM_PACKETS; ++i) {
+    std::vector<double> ftt_doubles(num_packets);
+    for (size_t i = 0; i < num_packets; ++i) {
       ftt_doubles[i] = forward_transit_times[i];
     }
     // Returns the values that best fit a + b * theoretical_quantiles =
@@ -135,7 +135,8 @@ public:
    *
    * @param network_link The network transport used for sending probes.
    */
-  explicit ClockEstimator(INetworkLink &network_link, size_t pkt_size = 48, size_t _num_packets = 5)
+  explicit ClockEstimator(INetworkLink &network_link, size_t pkt_size = 48,
+                          size_t _num_packets = 5)
       : link(network_link), packet_size(pkt_size), num_packets(_num_packets) {}
 
   /**
@@ -151,10 +152,10 @@ public:
     int max_retries = 5;
     while (max_retries-- > 0) {
       try {
-        std::vector<double> forward_transit_times;
-        std::vector<double> packet_separation;
+        std::vector<double> forward_transit_times(num_packets);
+        std::vector<double> packet_separation(num_packets - 1);
 
-        for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
+        for (uint8_t i = 0; i < num_packets; ++i) {
           SyncProbe probe{i, GetCurrentTime(), 0};
           link.Send(probe.Serialize(packet_size));
 
@@ -165,7 +166,7 @@ public:
 
         SyncProbe previous_probe{};
 
-        for (uint8_t i = 0; i < NUM_PACKETS; ++i) {
+        for (uint8_t i = 0; i < num_packets; ++i) {
           std::vector<uint8_t> reply = link.Receive(65536);
           SyncProbe replied_probe = SyncProbe::Deserialize(reply);
 
@@ -216,10 +217,10 @@ public:
         GammaParameters params = CalculateGammaParameters(stats);
         if (logger.is_open()) {
           logger << ss.str() << ',' << params.rho << ',' << params.beta << ',';
-					logger.close();
-        } else  {
-					std::cerr << "Error: could not log values.\n";
-				}
+          logger.close();
+        } else {
+          std::cerr << "Error: could not log values.\n";
+        }
         std::cout << "rho: " << params.rho << "\nbeta: " << params.beta << '\n';
         if (is_low_variance && is_ideal_average) {
           gamma_coefficient = *std::min_element(forward_transit_times.begin(),
