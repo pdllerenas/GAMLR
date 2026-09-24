@@ -29,6 +29,7 @@ private:
   size_t packet_size;
   size_t num_packets;
 
+
   /**
    * @brief Compute an array of theoretical quantiles for gamma fitting.
    *
@@ -41,13 +42,16 @@ private:
                                        bool special_case) {
     std::vector<double> theoretical_quantiles(num_packets);
     std::vector<double> probabilities(num_packets);
-    if (special_case) {
-      probabilities = {0.40, 0.45, 0.50, 0.55, 0.60};
-    } else {
-      probabilities = {0.166666, 0.333333, 0.50, 0.666666, 0.833333};
+    for (size_t i = 0; i < num_packets; ++i) {
+      if (special_case) {
+        double step = 0.20 / (num_packets > 1 ? num_packets - 1 : 1);
+        probabilities[i] = 0.40 + (i * step);
+      } else {
+        probabilities[i] = static_cast<double>(i + 1) / (num_packets + 1);
+      }
     }
     boost::math::gamma_distribution<double> dist(params.rho, params.beta);
-    for (size_t i = 0; i < NUM_PACKETS; ++i) {
+    for (size_t i = 0; i < num_packets; ++i) {
       theoretical_quantiles[i] = boost::math::quantile(dist, probabilities[i]);
     }
     return theoretical_quantiles;
@@ -152,14 +156,16 @@ public:
     int max_retries = 5;
     while (max_retries-- > 0) {
       try {
-        std::vector<double> forward_transit_times(num_packets);
-        std::vector<double> packet_separation(num_packets - 1);
+        std::vector<double> forward_transit_times;
+        forward_transit_times.reserve(num_packets);
+        std::vector<double> packet_separation;
+        packet_separation.reserve(num_packets - 1);
 
         for (uint8_t i = 0; i < num_packets; ++i) {
           SyncProbe probe{i, GetCurrentTime(), 0};
           link.Send(probe.Serialize(packet_size));
 
-          if (i < NUM_PACKETS - 1) {
+          if (i < num_packets - 1) {
             std::this_thread::sleep_for(INTER_PACKET_SEPARATION);
           }
         }

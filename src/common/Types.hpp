@@ -49,3 +49,5 @@ constexpr std::chrono::microseconds M_SEC_LOWERBOUND(10000); // 10 ms
  * @brief Number of packets exchanged during the clock offset estimation run.
  */
 constexpr size_t NUM_PACKETS = 5;
+
+constexpr size_t PACKET_PAIRS = 10;

@@ -188,6 +188,10 @@ class UDPClient : public BaseSocket, public INetworkLink {
     if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
       std::cerr << "Warning: Failed to set client socket timeout.\n";
     }
+		int enable = 1;
+		if (setsockopt(fd, SOL_SOCKET, SO_TIMESTAMPNS, &enable, sizeof(enable)) < 0) {
+      std::cerr << "Warning: Failed to set client socket SO_TIMESTAMPNS.\n";
+		}
   }
 
   /**
