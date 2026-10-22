@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import sys
 import numpy as np
 import pandas as pd
 from matplotlib.lines import lineMarkers
@@ -35,11 +36,11 @@ def plot_client(filename):
     ax2.grid(True, linestyle="--", alpha=0.7)
 
     ax3.plot(df["timestamp"], df["min_owd"], color="tab:green", label="min_owd", linestyle="-", linewidth=1)
-    ax3.plot(df["timestamp"], df["owd1"], label="owd1", linestyle="-", linewidth=1, alpha=0.8)
-    ax3.plot(df["timestamp"], df["owd2"], label="owd2", linestyle="-", linewidth=1, alpha=0.8)
-    ax3.plot(df["timestamp"], df["owd3"], label="owd3", linestyle="-", linewidth=1, alpha=0.8)
-    ax3.plot(df["timestamp"], df["owd4"], label="owd4", linestyle="-", linewidth=1, alpha=0.8)
-    ax3.plot(df["timestamp"], df["owd5"], label="owd5", linestyle="-", linewidth=1, alpha=0.8)
+    ax3.plot(df["timestamp"], df["owd1"], label="owd1", linestyle="-", linewidth=1, alpha=0.4)
+    ax3.plot(df["timestamp"], df["owd2"], label="owd2", linestyle="-", linewidth=1, alpha=0.4)
+    ax3.plot(df["timestamp"], df["owd3"], label="owd3", linestyle="-", linewidth=1, alpha=0.4)
+    ax3.plot(df["timestamp"], df["owd4"], label="owd4", linestyle="-", linewidth=1, alpha=0.4)
+    ax3.plot(df["timestamp"], df["owd5"], label="owd5", linestyle="-", linewidth=1, alpha=0.4)
 
     ax3.set_title("owd values over time")
     ax3.set_ylabel("owd")
@@ -86,8 +87,7 @@ def plot_data(filename):
 
 
 def main():
-    # plot_data("molote-mty-data.csv")
-    plot_client("mty-500B-30ms-data.csv")
+    plot_client(sys.argv[1])
 
 if __name__ == "__main__":
     main()

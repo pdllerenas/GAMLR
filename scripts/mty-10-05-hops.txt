@@ -1,0 +1,29 @@
+--- Trace to 148.207.185.20 at 2026-10-06 05:57:43 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  148.207.189.1                                         1.062ms asymm  2
+ 1:  148.207.189.1                                         0.944ms asymm  2
+ 2:  fixed-186-96-128-5.totalplay.net                      2.791ms asymm  3
+ 3:  no reply
+ 4:  no reply
+ 5:  host-137-56-static-98-201.uninet-ide.com.mx          42.674ms asymm 10
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       23.771ms reached
+     Resume: pmtu 1500 hops 10 back 9
+
+--- Trace to 148.207.185.20 at 2026-10-06 06:03:08 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  148.207.189.1                                         0.944ms asymm  2
+ 1:  148.207.189.1                                         0.853ms asymm  2
+ 2:  fixed-186-96-128-5.totalplay.net                      3.026ms asymm  3
+ 3:  no reply
+ 4:  no reply
+ 5:  host-137-56-static-98-201.uninet-ide.com.mx          39.824ms asymm 10
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       23.793ms reached
+     Resume: pmtu 1500 hops 10 back 9

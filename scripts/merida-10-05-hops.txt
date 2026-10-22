@@ -1,0 +1,453 @@
+--- Trace to 148.207.185.20 at 2026-10-05 11:29:27 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.081ms asymm  2
+ 1:  192.168.10.254                                        1.108ms asymm  2
+ 2:  192.168.10.254                                        1.124ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   6.332ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-1.uninet.net.mx     49.965ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          57.224ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       76.764ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-05 11:34:46 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.122ms asymm  2
+ 1:  192.168.10.254                                        1.030ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.693ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     32.083ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          40.697ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       70.519ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-05 12:10:09 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.048ms asymm  2
+ 1:  192.168.10.254                                        1.124ms asymm  2
+ 2:  192.168.10.254                                        1.056ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.512ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-0.uninet.net.mx     34.659ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          36.942ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       70.257ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-05 12:30:29 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.106ms asymm  2
+ 1:  192.168.10.254                                        1.576ms asymm  2
+ 2:  192.168.10.254                                        1.110ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                  12.511ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-0.uninet.net.mx     51.281ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          53.953ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       76.391ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-05 12:35:47 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.069ms asymm  2
+ 1:  192.168.10.254                                        1.108ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   6.400ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-0.uninet.net.mx     33.728ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          34.072ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       68.205ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-05 13:51:16 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.453ms asymm  2
+ 1:  192.168.10.254                                        1.065ms asymm  2
+ 2:  192.168.10.254                                        1.002ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.861ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-0.uninet.net.mx     49.832ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          52.749ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       76.256ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-05 21:11:51 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.303ms asymm  2
+ 1:  192.168.10.254                                        1.398ms asymm  2
+ 2:  192.168.10.254                                        1.425ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.431ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-0.uninet.net.mx     35.623ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          40.695ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       70.670ms reached
+     Resume: pmtu 1492 hops 10 back 15
+
+--- Trace to 148.207.185.20 at 2026-10-05 23:02:26 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.546ms asymm  2
+ 1:  192.168.10.254                                        1.560ms asymm  2
+ 2:  192.168.10.254                                        1.305ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   7.228ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     33.621ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          42.094ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       59.087ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-05 23:07:44 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.328ms asymm  2
+ 1:  192.168.10.254                                        1.347ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   5.003ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-0.uninet.net.mx     36.189ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          38.702ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       67.952ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 02:24:02 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.267ms asymm  2
+ 1:  192.168.10.254                                        1.283ms asymm  2
+ 2:  192.168.10.254                                        1.261ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.971ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-0.uninet.net.mx     49.096ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          51.165ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       76.881ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 02:29:20 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.205ms asymm  2
+ 1:  192.168.10.254                                        1.249ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   6.391ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     35.389ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          38.135ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       68.404ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 02:44:39 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.238ms asymm  2
+ 1:  192.168.10.254                                        1.475ms asymm  2
+ 2:  192.168.10.254                                        1.271ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   7.564ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-1.uninet.net.mx     50.609ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          57.591ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       77.844ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 03:00:05 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.270ms asymm  2
+ 1:  192.168.10.254                                        1.326ms asymm  2
+ 2:  192.168.10.254                                        1.168ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                  15.565ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     35.022ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          40.488ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       68.273ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 03:10:23 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.212ms asymm  2
+ 1:  192.168.10.254                                        1.212ms asymm  2
+ 2:  192.168.10.254                                        1.241ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                  24.073ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-0.uninet.net.mx     51.064ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx         191.555ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       76.671ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 03:50:46 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.373ms asymm  2
+ 1:  192.168.10.254                                        1.296ms asymm  2
+ 2:  192.168.10.254                                        1.226ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   7.166ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-0.uninet.net.mx     35.910ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          42.296ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       68.714ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 04:11:06 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.228ms asymm  2
+ 1:  192.168.10.254                                        1.473ms asymm  2
+ 2:  192.168.10.254                                        1.417ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                  10.453ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-1.uninet.net.mx     49.684ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          56.490ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       77.544ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 04:21:24 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.293ms asymm  2
+ 1:  192.168.10.254                                        1.333ms asymm  2
+ 2:  192.168.10.254                                        1.367ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   5.959ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     35.488ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          37.048ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       70.535ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 04:26:43 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.125ms asymm  2
+ 1:  192.168.10.254                                        1.316ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   6.297ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-0.uninet.net.mx     48.526ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          52.945ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       78.014ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 04:32:00 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.057ms asymm  2
+ 1:  192.168.10.254                                        1.282ms asymm  2
+ 2:  192.168.10.254                                        1.382ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                  29.018ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     35.792ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          36.695ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       69.691ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 04:47:19 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.264ms asymm  2
+ 1:  192.168.10.254                                        1.344ms asymm  2
+ 2:  192.168.10.254                                        1.390ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                  15.517ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-1.uninet.net.mx     51.179ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          53.176ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       77.425ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 04:52:38 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.233ms asymm  2
+ 1:  192.168.10.254                                        1.293ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   7.479ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     34.901ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          40.027ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       67.960ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 04:57:55 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.100ms asymm  2
+ 1:  192.168.10.254                                        1.185ms asymm  2
+ 2:  192.168.10.254                                        1.077ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.676ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-1.uninet.net.mx     50.607ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          54.943ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       76.537ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 05:08:14 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.194ms asymm  2
+ 1:  192.168.10.254                                        1.279ms asymm  2
+ 2:  192.168.10.254                                        1.243ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   7.005ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     34.331ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          37.573ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       67.472ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 05:18:33 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.232ms asymm  2
+ 1:  192.168.10.254                                        1.272ms asymm  2
+ 2:  192.168.10.254                                        1.292ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.279ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-0.uninet.net.mx     50.454ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          54.978ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       76.185ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 05:23:51 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.083ms asymm  2
+ 1:  192.168.10.254                                        1.254ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   5.404ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     35.105ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          36.971ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       70.373ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 05:34:16 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.435ms asymm  2
+ 1:  192.168.10.254                                        1.449ms asymm  2
+ 2:  192.168.10.254                                        1.308ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                  10.965ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-1.uninet.net.mx     50.182ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          53.072ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       77.972ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 05:39:34 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.320ms asymm  2
+ 1:  192.168.10.254                                        1.225ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   5.697ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-1.uninet.net.mx     34.277ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          37.807ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       70.256ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 09:45:57 ---
+ 1?: [LOCALHOST]                      pmtu 1500
+ 1:  192.168.10.254                                        1.170ms asymm  2
+ 1:  192.168.10.254                                        1.079ms asymm  2
+ 2:  192.168.10.254                                        1.159ms pmtu 1492
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.667ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-3-0-1.uninet.net.mx     50.951ms asymm 12
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          52.230ms asymm 12
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       70.423ms reached
+     Resume: pmtu 1492 hops 10 back 17
+
+--- Trace to 148.207.185.20 at 2026-10-06 09:51:15 ---
+ 1?: [LOCALHOST]                      pmtu 1492
+ 1:  192.168.10.254                                        1.027ms asymm  2
+ 1:  192.168.10.254                                        1.014ms asymm  2
+ 2:  ipdsl-yuc-plaza-39-l0.uninet.net.mx                   4.920ms asymm  3
+ 3:  inet-gto-pedromoreno-40-tge0-4-0-0.uninet.net.mx     34.057ms asymm 10
+ 4:  host-137-56-static-98-201.uninet-ide.com.mx          37.350ms asymm 10
+ 5:  no reply
+ 6:  no reply
+ 7:  no reply
+ 8:  no reply
+ 9:  no reply
+10:  148.207.185.20                                       69.420ms reached
